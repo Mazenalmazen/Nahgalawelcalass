@@ -605,7 +605,7 @@ async function loadSingleClassroomContents(code) {
             bodyContent = `
                 <div style="margin-top:12px; text-align:center;">
                     <a href="${item.body}" target="_blank" class="desine-btn" style="background:#0284c7; display:inline-block; padding:10px 35px; text-decoration:none; border-radius:10px; font-weight:800; font-size:0.95rem; box-shadow:0 4px 12px rgba(2,132,199,0.3); transition:0.2s;">
-                        <i class="fas fa-external-link-alt"></i> فتح الرابط
+                        <i class="fas fa-external-link-alt"></i>  فتح في المتصفح
                     </a>
                 </div>
             `;
