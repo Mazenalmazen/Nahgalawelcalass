@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width">
+    <title>منصة نهج الأوائل - الفصول الإلكترونية</title>
+    
+    <!-- ========== خطوط Google Fonts ========== -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=STIX+Two+Math:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Math&display=swap" rel="stylesheet">
+    
+    <!-- ========== PWA ========== -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#4f46e5">
+    <meta name="color-scheme" content="light">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="msapplication-tap-highlight" content="no">
+    
+    <!-- ========== المكتبات الخارجية ========== -->
+    <link rel="stylesheet" type="text/css" href="normalize.css">
+    <!-- تم تغيير رابط Font Awesome إلى المسار المحلي -->
+    <link rel="stylesheet" type="text/css" href="css/all.min.css">
+    <link rel="stylesheet" href="animate.css">
+    
+    <!-- ========== التنسيق الرئيسي ========== -->
+    <link rel="stylesheet" type="text/css" href="style.css">
+    
+    <!-- ========== Supabase ========== -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        const SUPABASE_URL = 'https://dqshuhsuvblresvaaifr.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_i-7BFfJT_JgnYXs9zcrBqQ_RNLvgMLT';
+        window._supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    </script>
+    
+    <!-- ========== jQuery والمكتبات المساعدة ========== -->
+    <script src="jquery-3.1.1.min.js"></script>
+    <script src="jquery-ui.min.js"></script>
+    <script src="jquery.ns-autogrow.min.js"></script>
+    <script src="sweetAlert.js"></script>
+    <script src="crypto.js"></script>
+    <script src="lan_ar.js"></script>
+    
+    <script>
+        var app_lan = 'ar';
+        function openExternalLink(url) {
+            window.open(url, '_blank');
+        }
+    </script>
+</head>
+<body lang="ar">
+    <div id='boody'>
+        <!-- ========== الهيدر ========== -->
+        <header>
+            <div class="contaner">
+                <img src="icon48x48.png"/>
+                <p id="title_name">منصة نهج الأوائل - الفصول الإلكترونية</p>
+            </div>
+        </header>
+
+        <!-- ========== المحتوى الرئيسي ========== -->
+        <div class="my_pages">
+            
+            <!-- ===== الصفحة الرئيسية ===== -->
+            <div id="page_home">
+                <div class="con-search" style="margin-top: 25px;">
+                    <div id="show_search" style="background:#fff; width:92%; max-width:520px; margin:auto; padding:25px; border-radius:14px; border:1.5px solid var(--border-color); box-shadow:0 2px 4px rgba(0,0,0,0.02);">
+                        <h3 style="color:var(--primary); margin-bottom:10px;"><i class="fas fa-graduation-cap"></i> بوابة اختبارات الطلاب</h3>
+                        <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:15px; text-align:center;">ادخل رقم الاختبار المكون من 6 أرقام لبدء الحل فوراً</p>
+                        <div>
+                            <input class="desine-input-text" type="number" id="num_exam" placeholder="رقم الاختبار (مثال: 123456)" style="text-align:center;"><br>
+                            <button class="desine-btn" onclick="search_exam()" style="width:90%; max-width:420px; padding:12px;"><i class="fas fa-search"></i> بحث ودخول الاختبار</button>
+                        </div>
+                        <hr style="margin: 20px 0;">
+                        <button class="desine-btn" onclick="showTeacherNotice()" style="background:#0284c7; width:90%; max-width:420px; font-size:0.9rem;"><i class="fas fa-chalkboard-teacher"></i> إنشاء اختبار (للمعلمين)</button>
+                    </div>
+
+                    <div id="result_search" class="Dnone" style="background:#fff; width:92%; max-width:520px; margin:auto; padding:25px; border-radius:14px; border:1.5px solid var(--border-color);">
+                        <h3 style="color:var(--success);">تم العثور على الاختبار</h3>
+                        <table style="border:none; box-shadow:none; margin:10px auto;">
+                            <tr>
+                                <td style="font-weight:800; color:var(--text-muted);">اسم الاختبار:</td>
+                                <td><div id="showName" style="font-size:1.05rem; color:var(--primary);"></div></td>
+                            </tr>
+                            <tr>
+                                <td style="font-weight:800; color:var(--text-muted);">نبذة:</td>
+                                <td><div id="showNobza"></div></td>
+                            </tr>
+                            <tr>
+                                <td colspan="2" style="padding-top:15px;">
+                                    <button class="desine-btn" onclick="downloadExam_new()" style="width:100%;"><i class="fas fa-play-circle"></i> بدء الاختبار الآن</button><br>
+                                    <button class="desine-btn" onclick="show_search()" style="background:#64748b; width:100%; margin-top:6px;"><i class="fas fa-arrow-right"></i> بحث برقم آخر</button>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+                
+                <div id="exam_saved" class="tbl_exam_saved">
+                    <table>
+                        <thead>
+                            <tr>
+                                <td colspan="3">الاختبارات المحفوظة محلياً</td>
+                            </tr>
+                            <tr>
+                                <td>اسم الاختبار</td>
+                                <td>الرقم</td>
+                                <td>الإجراء</td>
+                            </tr>
+                        </thead>
+                        <tbody id="exam_loaded_forAdd">
+                            <tr>
+                                <td colspan="3">لم تقم بحفظ أي اختبار محلياً حتى الآن</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ===== صفحة أداء الاختبار ===== -->
+            <div id="page_mytest" class="Dnone page_mytest">
+                <form>
+                    <i id="backToResult" class="fas fa-arrow-right" onclick="backToPrev_page()" style="font-size:22px; cursor:pointer; padding:10px; color:#1e293b;"></i>
+                    <div id="navTimeTest" class="Dnone">
+                        <table>
+                            <tr>
+                                <td style="width:75%"><div>الدقائق المتبقية</div></td>
+                                <td style="width:25%"><div id="showTimeHere"></div></td>
+                            </tr>
+                        </table>
+                    </div>
+                    <br>
+                    <div>
+                        <table id="tbl_data_std">
+                            <tr>
+                                <td width="40%">رقم الاختبار</td>
+                                <td><div id="show_numExam"></div></td>
+                            </tr>
+                            <tr>
+                                <td width="40%">اسم الاختبار</td>
+                                <td><div id="show_nameExam"></div></td>
+                            </tr>
+                            <tr>
+                                <td width="40%">نبذة عن الاختبار</td>
+                                <td><div id="show_nobzaExam"></div></td>
+                            </tr>
+                            <tr>
+                                <td width="40%">اسم الطالب الثلاثي أو الرباعي</td>
+                                <td><input class="inputMyApp" id="shows_name" type="text" placeholder="ادخل اسمك الكامل" style="text-align: right;"/></td>
+                            </tr>
+                            <tr>
+                                <td width="40%">معلومات إضافية</td>
+                                <td><input class="inputMyApp" id="shows_info" type="text" placeholder="اختياري (الفصل / الشعبة)" style="text-align: right;"/></td>
+                            </tr>
+                        </table>
+                    </div>
+                    <br>
+                    <div id="add_ask_here"></div>
+                </form>
+                <button id="Takeed" class="desine-btn" onclick="check_ans_empty()"><i class="fas fa-check"></i> إنهاء الاختبار</button>
+                <button id="Tasleem" class="desine-btn Dnone" onclick="get_ans_data()"><i class="fas fa-cloud-upload-alt"></i> تسليم الإجابات سحابياً</button>
+                <br><br>
+            </div>
+
+            <!-- ===== صفحة إنشاء اختبار جديد ===== -->
+            <div id="page_newtest" class="Dnone">
+                <br>
+                <div style="text-align:center; margin-bottom:15px;">
+                    <button type="button" class="desine-btn" onclick="showTeacherGuideModal()" style="background:#0284c7; font-size:0.95rem; display:inline-block; margin:auto;"><i class="fas fa-book-open"></i> دليل إنشاء الاختبار للمعلم</button>
+                </div>
+                <h3>لوحة بناء الأسئلة</h3>
+                
+                <!-- اختيار المادة -->
+                <div style="width:90%; max-width:450px; margin:10px auto;">
+                    <label style="display:block; text-align:right; font-weight:800; margin-bottom:8px; color:var(--primary);"><i class="fas fa-flask"></i> المادة الدراسية:</label>
+                    <select class="inputMyApp" id="exam_subject" style="text-align:right;">
+                        <option value="math">رياضيات</option>
+                        <option value="physics">فيزياء</option>
+                        <option value="chemistry">كيمياء</option>
+                        <option value="biology">أحياء</option>
+                        <option value="other">أخرى</option>
+                    </select>
+                </div>
+                
+                <table width="95%" border="0" class="form-table">
+                    <tr>
+                        <td><input placeholder="ادخل عنوان الاختبار (مثال: اختبار الرياضيات)" class="inputMyApp" id="t_name" type='text' style="text-align: right;"></td>
+                    </tr>
+                    <tr>
+                        <td><input placeholder="نبذة وصفية عن الاختبار (اختياري)" class="inputMyApp" id="t_info" type='text' style="text-align: right;"></td>
+                    </tr>
+                </table>
+                <br>
+                <hr>
+                <br>
+                <table style="width:90%; margin:auto;" class="options-table">
+                    <tr>
+                        <td colspan="2"><b style="color:var(--primary);"><i class="fas fa-sliders-h"></i> خيارات الاختبار المتقدمة وبنك الأسئلة</b></td>
+                    </tr>
+                    <tr>
+                        <td style="width: 40px;"><input type="checkbox" id="Pass_start_ckeck" onclick="$('#input_Pass').toggle();" style="width:18px; height:18px;" /></td>
+                        <td>إنشاء كلمة مرور خاصة بالطلاب لبدء الاختبار</td>
+                    </tr>
+                    <tr id="input_Pass" style="display:none;">
+                        <td colspan="2"><input id="t_pass_start" class="inputMyApp" type='text' placeholder='ادخل كلمة المرور (أرقام أو حروف)' /></td>
+                    </tr>
+                    <tr>
+                        <td><input type="checkbox" id="Time_test_ckeck" onclick="$('#input_Time').toggle();" style="width:18px; height:18px;" /></td>
+                        <td>تحديد مدة الاختبار (بالدقيقة)</td>
+                    </tr>
+                    <tr id="input_Time" style="display:none;">
+                        <td colspan="2"><input class="inputMyApp" id="Time_test" type="number" placeholder="ادخل عدد الدقائق" /></td>
+                    </tr>
+                    <tr>
+                        <td><input type="checkbox" id="Bank_test_ckeck" onclick="$('#input_Bank').toggle();" style="width:18px; height:18px;" /></td>
+                        <td>تفعيل بنك الأسئلة (سحب عدد عشوائي لكل طالب من إجمالي الأسئلة)</td>
+                    </tr>
+                    <tr id="input_Bank" style="display:none;">
+                        <td colspan="2"><input class="inputMyApp" id="Bank_test" type="number" placeholder="عدد الأسئلة المطلوبة لكل طالب" /></td>
+                    </tr>
+                    <tr>
+                        <td><input type="checkbox" id="RandomAsk" style="width:18px; height:18px;" /></td>
+                        <td>ترتيب الأسئلة بشكل عشوائي للطلاب</td>
+                    </tr>
+                    <tr>
+                        <td><input type="checkbox" id="RandomAnswers" style="width:18px; height:18px;" /></td>
+                        <td>ترتيب الإجابات عشوائياً للطلاب</td>
+                    </tr>
+                </table>
+                <br>
+                <hr>
+                <br>
+                
+                <!-- ===== زر فتح صندوق الرموز ===== -->
+                <button id="toggleSymbolsBtn" class="desine-btn" onclick="toggleSymbols()" style="background:#4f46e5; width:92%; max-width:650px; margin:10px auto; display:block; border-radius:10px;">
+                    <i class="fas fa-copy"></i> فتح صندوق الرموز العلمية
+                </button>
+
+                <!-- ===== صندوق الرموز العلمية (مخفي افتراضياً) ===== -->
+                <div id="symbols_container" class="Dnone" style="width:100%;">
+                    <div style="width:92%; max-width:650px; margin:15px auto; padding:15px; background:#f8fafc; border-radius:12px; border:1.5px solid var(--border-color);">
+                        <p style="text-align:right; font-weight:800; margin:0 0 10px 0; color:var(--primary);"><i class="fas fa-copy"></i> صندوق الرموز العلمية (انسخ ما تحتاجه)</p>
+                        <div class="symbol-box" style="display:flex; flex-wrap:wrap; gap:6px; justify-content:center; padding:12px; background:#fff; border-radius:8px; border:1px solid #e2e8f0;">
+                            <!-- المجموعة الأولى: رموز المنطق والمجموعات -->
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ط">ط</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ⋃">⋃</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ت">ت</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ :">:</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ح">ح</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ⟻">⟻</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ⋂">⋂</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ س">س</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ←">←</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ص">ص</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ⊂">⊂</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ سہ">سہ</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ /">/</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ صہ">صہ</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ∋">∋</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ شہ">شہ</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ∅">∅</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ π">π</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ <"><</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ≤">≤</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ≥">≥</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ >">></span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ∪">∪</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ∩">∩</span>
+                            
+                            <!-- الأسس العلوية -->
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ¹">¹</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ²">²</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ³">³</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ⁴">⁴</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ⁵">⁵</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ⁶">⁶</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ⁷">⁷</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ⁸">⁸</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ⁹">⁹</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ⁰">⁰</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ⁻">⁻</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ⁼">⁼</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ⁺">⁺</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ᵅ">ᵅ</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ⁿ">ⁿ</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ⁱ">ⁱ</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ˣ">ˣ</span>
+                            
+                            <!-- الأسس السفلية والرموز الخاصة -->
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ₁">₁</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ₂">₂</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ₃">₃</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ₄">₄</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ₅">₅</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ₆">₆</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ₇">₇</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ₈">₈</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ₉">₉</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ₀">₀</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ →">→</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ₓ">ₓ</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ₐ">ₐ</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ₋">₋</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ₊">₊</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ₌">₌</span>
+                            
+                            <!-- رموز رياضية وحروف يونانية -->
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ∀">∀</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ∃">∃</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ∫">∫</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ∑">∑</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ f">f</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ∞">∞</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ -">-</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ +">+</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ∆">∆</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ 𐦫">𐦫</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ᶿ">ᶿ</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ᶲ">ᶲ</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ﮪ">ﮪ</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ⇐">⇐</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ 𐬼">𐬼</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ؏">؏</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ±">±</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ھ">ھ</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ 𝈝">𝈝</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ⊃">⊃</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ꚙ">ꚙ</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ⬸">⬸</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ 𖼀">𖼀</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ❌">❌</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ✔">✔</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ｌ">ｌ</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ⇔">⇔</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ∴">∴</span>
+                            
+                            <!-- الحروف اليونانية الصغيرة -->
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ λ">λ</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ μ">μ</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ α">α</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ β">β</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ γ">γ</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ π">π</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ∫">∫</span>
+                        </div>
+                        <p style="text-align:right; font-size:0.8rem; color:var(--text-muted); margin:8px 0 0 0;">
+                            <i class="fas fa-info-circle"></i> انقر على أي رمز لنسخه تلقائياً، ثم الصقه في حقل السؤال أو الإجابة.
+                        </p>
+                    </div>
+                </div>
+                
+                <div id="form_new_ask"></div>
+                <div style="text-align:center;">
+                    <button type="button" onclick="add_ask();" class="desine-btn add-btn" style="display:inline-block; margin:5px;"><i class="fas fa-plus"></i> أضف سؤال جديد</button>
+                    <button type="button" onclick="delete_ask();" class="desine-btn del-btn" style="background:var(--danger); display:inline-block; margin:5px;"><i class="fas fa-trash"></i> حذف آخر سؤال</button>
+                </div>
+                <br><br>
+                <div style="text-align:center;">
+                    <button type="button" onclick="get_exam_data()" id="btnAddExam" class="desine-btn craete-btn" style="padding: 15px 40px; font-size:1.15rem; display:inline-block; margin:auto;"><i class="fas fa-save"></i> حفظ ونشر الاختبار سحابياً</button>
+                </div>
+                <br><br>
+            </div>
+
+            <!-- ===== صفحة نتائج الاختبار ===== -->
+            <div id="page_result" class="Dnone">
+                <div id="option_result">
+                    <select id="option_result_by" class="desine-btn" onchange="sortResultsByCriteria(this.value)">
+                        <option value="date">النتائج حسب تاريخ التسليم (الأحدث)</option>
+                        <option value="degree_desc">النتائج حسب الدرجة (من الأعلى للأقل)</option>
+                        <option value="degree_asc">النتائج حسب الدرجة (من الأقل للأعلى)</option>
+                        <option value="name">النتائج حسب اسم الطالب</option>
+                    </select>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <td colspan="5">سجل نتائج الطلاب</td>
+                        </tr>
+                        <tr>
+                            <th>الرقم</th>
+                            <th>اسم الطالب</th>
+                            <th>معلومات إضافية</th>
+                            <th>تاريخ التسليم</th>
+                            <th>الدرجة</th>
+                        </tr>
+                    </thead>
+                    <tbody id="showresult">
+                        <tr>
+                            <td colspan="5"><img id="img_load_result" src="load.gif" /></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div style="text-align:center;">
+                    <button class="desine-btn btn-save" onclick="save_excel()" style="display:inline-block; margin:5px;"><i class="fas fa-file-excel"></i> تصدير Excel</button>
+                    <button class="desine-btn btn-save" onclick="delete_result()" style="background:var(--danger); display:inline-block; margin:5px;"><i class="fas fa-trash-alt"></i> حذف جميع النتائج</button>
+                </div>
+                <br><br>
+            </div>
+
+            <!-- ===== صفحة اختباراتي ===== -->
+            <div id="prev_exam" class="Dnone">
+                <div id="exam_saved_te" class="tbl_exam_saved teacher">
+                    
+                    <div style="text-align:center; padding:25px 15px;">
+                        <button class="desine-btn" onclick="go_page('page_newtest')" style="
+                            display:inline-flex;
+                            align-items:center;
+                            justify-content:center;
+                            gap:12px;
+                            width:92%;
+                            max-width:480px;
+                            padding:20px 35px;
+                            font-size:1.2rem;
+                            font-weight:900;
+                            background:linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #2563eb 100%);
+                            color:#ffffff;
+                            border:none;
+                            border-radius:18px;
+                            box-shadow:0 10px 30px rgba(79,70,229,0.4), 0 4px 12px rgba(0,0,0,0.1);
+                            cursor:pointer;
+                            transition:all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                            position:relative;
+                            overflow:hidden;
+                            letter-spacing:0.5px;
+                            font-family:'Cairo', 'Tajawal', sans-serif;
+                        " onmouseover="this.style.transform='translateY(-4px) scale(1.03)'; this.style.boxShadow='0 15px 40px rgba(79,70,229,0.5), 0 8px 20px rgba(0,0,0,0.15)'" onmouseout="this.style.transform='translateY(0) scale(1)'; this.style.boxShadow='0 10px 30px rgba(79,70,229,0.4), 0 4px 12px rgba(0,0,0,0.1)'" onmousedown="this.style.transform='translateY(-1px) scale(0.97)'" onmouseup="this.style.transform='translateY(-4px) scale(1.03)'">
+                            <span style="
+                                display:flex;
+                                align-items:center;
+                                justify-content:center;
+                                width:46px;
+                                height:46px;
+                                background:rgba(255,255,255,0.25);
+                                border-radius:50%;
+                                backdrop-filter:blur(8px);
+                                border:2px solid rgba(255,255,255,0.3);
+                                flex-shrink:0;
+                            ">
+                                <i class="fas fa-plus" style="font-size:1.4rem; color:#fff;"></i>
+                            </span>
+                            <span>إنشاء اختبار جديد</span>
+                        </button>
+                    </div>
+                    
+                    <table>
+                        <thead>
+                            <tr>
+                                <td colspan="3"><span>اختبارات المعلم المنشورة</span></td>
+                            </tr>
+                            <tr>
+                                <td>اسم الاختبار</td>
+                                <td>الرقم</td>
+                                <td>خيارات التحكم</td>
+                            </tr>
+                        </thead>
+                        <tbody id="exam_saved_forAdd">
+                            <tr>
+                                <td colspan="3">لم تقم بإنشاء أي اختبار حتى الآن</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ===== صفحة الفصول الإلكترونية ===== -->
+            <div id="page_classrooms" class="Dnone">
+                <br>
+                <h3 style="color:var(--primary);"><i class="fas fa-users-class"></i> الفصول الدراسية الإلكترونية</h3>
+                
+                <div style="background:#fff; width:92%; max-width:500px; margin:20px auto; padding:20px; border-radius:14px; border:1.5px solid var(--border-color); text-align:right;">
+                    <h4 style="color:#0284c7; margin-top:0;"><i class="fas fa-sign-in-alt"></i> انضم إلى فصل دراسي</h4>
+                    <p style="font-size:0.85rem; color:var(--text-muted);">ادخل اسمك ورمز الانضمام المسلّم من معلمك:</p>
+                    <input class="inputMyApp" id="student_join_name" type="text" placeholder="اسمك الثلاثي" style="text-align:right; width:100%;"><br>
+                    
+                    <div style="display:flex; align-items:center; gap:0; width:100%; margin:8px 0; border:1.5px solid var(--border-color); border-radius:10px; overflow:hidden; background:#f8fafc;">
+                        <span style="background:#e2e8f0; color:#475569; padding:12px 14px; font-weight:800; font-size:0.95rem; border-left:1.5px solid var(--border-color); white-space:nowrap; user-select:none;">CLS-</span>
+                        <input class="inputMyApp" id="student_join_code" type="number" inputmode="numeric" pattern="[0-9]*" placeholder="7601" style="text-align:center; width:100%; border:none; background:transparent; margin:0; border-radius:0; font-weight:800; letter-spacing:2px; font-size:1.1rem;">
+                    </div>
+                    
+                    <button class="desine-btn" onclick="studentJoinClassroom()" style="width:100%; background:#10b981; margin-top:5px;"><i class="fas fa-check"></i> انضمام للفصل</button>
+                </div>
+
+                <br>
+                <table>
+                    <thead>
+                        <tr>
+                            <td colspan="3"><span>قائمة الفصول الدراسية</span></td>
+                        </tr>
+                        <tr>
+                            <td>اسم الفصل</td>
+                            <td>الرمز</td>
+                            <td>إجراء</td>
+                        </tr>
+                    </thead>
+                    <tbody id="classrooms_list_add">
+                        <tr>
+                            <td colspan="3">لا توجد فصول مسجلة حتى الآن</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div style="text-align:center; margin-top:20px;">
+                    <button class="desine-btn" style="background:#64748b;" onclick="go_page('page_home')">العودة للرئيسية</button>
+                </div>
+                <br><br>
+            </div>
+
+            <!-- ===== صفحة إدارة الفصل المستقلة ===== -->
+            <div id="page_classroom_single" class="Dnone" style="padding: 15px;">
+                <div style="max-width: 650px; margin: auto; background: #fff; border-radius: 20px; border: 1.5px solid var(--border-color); box-shadow: 0 8px 30px rgba(0,0,0,0.08); overflow: hidden; text-align: right;">
+                    
+                    <!-- الهيدر العلوي المميز -->
+                    <div style="background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #2563eb 100%); padding: 20px 25px 25px 25px; position: relative;">
+                        
+                        <!-- زر العودة العائم -->
+                        <div style="position: absolute; top: 15px; left: 15px; z-index: 10;">
+                            <button class="desine-btn" onclick="goClassroomsPage()" style="
+                                background: rgba(255,255,255,0.15);
+                                backdrop-filter: blur(10px);
+                                color: #fff;
+                                padding: 10px 16px;
+                                font-size: 0.8rem;
+                                font-weight: 700;
+                                border: 1.5px solid rgba(255,255,255,0.25);
+                                border-radius: 12px;
+                                margin: 0;
+                                transition: all 0.3s ease;
+                                display: flex;
+                                align-items: center;
+                                gap: 6px;
+                            " onmouseover="this.style.background='rgba(255,255,255,0.3)'; this.style.transform='translateX(-3px)'" onmouseout="this.style.background='rgba(255,255,255,0.15)'; this.style.transform='translateX(0)'">
+                                <i class="fas fa-arrow-right"></i>
+                                <span>عودة</span>
+                            </button>
+                        </div>
+                        
+                        <!-- عنوان الفصل -->
+                        <div style="padding-left: 90px; min-height: 45px; display: flex; align-items: center;">
+                            <h2 id="single_cls_title" style="
+                                color: #fff;
+                                margin: 0;
+                                font-size: 1.25rem;
+                                font-weight: 900;
+                                text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+                                line-height: 1.4;
+                                word-break: break-word;
+                            ">إدارة الفصل الدراسي</h2>
+                        </div>
+                        
+                        <!-- رمز الانضمام -->
+                        <div style="margin-top: 12px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                            <span style="color: rgba(255,255,255,0.85); font-size: 0.85rem; font-weight: 600;">رمز الانضمام الخاص بالفصل:</span>
+                            <div style="
+                                background: rgba(255,255,255,0.2);
+                                backdrop-filter: blur(10px);
+                                border: 1.5px solid rgba(255,255,255,0.35);
+                                border-radius: 12px;
+                                padding: 6px 16px;
+                                display: inline-flex;
+                                align-items: center;
+                                gap: 8px;
+                            ">
+                                <span style="color: rgba(255,255,255,0.7); font-size: 0.8rem; font-weight: 700;">بالفصل:</span>
+                                <code id="single_cls_code" style="
+                                    background: transparent;
+                                    color: #fff;
+                                    font-size: 1.1rem;
+                                    font-weight: 900;
+                                    letter-spacing: 1px;
+                                    padding: 0;
+                                ">CLS-7601</code>
+                            </div>
+                        </div>
+                        
+                        <!-- ديكور زخرفي -->
+                        <div style="
+                            position: absolute;
+                            bottom: -1px;
+                            left: 0;
+                            right: 0;
+                            height: 25px;
+                            background: #fff;
+                            border-radius: 25px 25px 0 0;
+                        "></div>
+                    </div>
+                    
+                    <!-- محتوى الصفحة -->
+                    <div style="padding: 25px;">
+                        
+                        <h4 style="color:#0284c7; text-align:right; margin-top: 0; font-size: 1.05rem; font-weight: 800;">
+                            <i class="fas fa-book" style="margin-left: 8px;"></i> اختبارات الفصل المنشورة
+                        </h4>
+                        <div id="single_cls_exams_container" style="text-align:right; margin-bottom: 20px;">جاري التحميل...</div>
+                        
+                        <div id="teacher_add_exam_to_cls_box" class="Dnone" style="background:#f8fafc; padding:20px; border-radius:14px; border:1.5px solid #cbd5e1; margin-top:15px; text-align:right;">
+                            <label style="font-weight:800; display:block; margin-bottom:10px; color:#1e293b; font-size: 0.95rem;">ربط اختبار جديد بالفصل:</label>
+                            <div style="display: flex; gap: 10px; align-items: center;">
+                                <input class="inputMyApp" id="single_link_exam_num" type="number" placeholder="رقم الاختبار (مثال: 123456)" style="text-align:center; width:100%; margin:0; border-radius: 10px;">
+                                <button class="desine-btn" style="background:#10b981; margin:0; white-space: nowrap; padding: 12px 20px; border-radius: 10px;" onclick="publishExamToSingleClass()">
+                                    <i class="fas fa-link" style="margin-left: 6px;"></i> ربط
+                                </button>
+                            </div>
+                        </div>
+
+                        <hr style="margin: 30px 0; border: none; border-top: 1.5px solid #e2e8f0;">
+
+                        <h4 style="color:#4338ca; text-align:right; font-size: 1.05rem; font-weight: 800;">
+                            <i class="fas fa-bullhorn" style="margin-left: 8px;"></i> المحتوى والإعلانات التعليمية
+                        </h4>
+                        <div id="single_cls_content_container" style="margin-bottom:20px; text-align:right;">لا توجد محتويات أو إعلانات منشورة بعد.</div>
+                        
+                        <div id="teacher_add_content_box" class="Dnone" style="background:#f8fafc; padding:20px; border-radius:14px; border:1.5px solid #cbd5e1; text-align:right;">
+                            <h5 style="margin:0 0 12px 0; color:#1e293b; font-size:1rem; font-weight: 800;">إضافة محتوى جديد للفصل:</h5>
+                            
+                            <select class="inputMyApp" id="cls_content_type" style="width:100%; margin-bottom:12px; text-align:right; border-radius: 10px;">
+                                <option value="text">إعلان أو شرح نصي</option>
+                                <option value="link">زر رابط خارجي (موقع / مرجع / زووم)</option>
+                            </select>
+
+                            <input class="inputMyApp" id="cls_content_title" type="text" placeholder="عنوان المحتوى أو اسم الزر" style="text-align:right; width:100%; margin-bottom:12px; border-radius: 10px;">
+                            
+                            <textarea class="inputMyApp" id="cls_content_body" placeholder="اكتب تفاصيل الشرح أو السؤال أو الرابط هنا..." style="text-align:right; width:100%; height:90px; resize:vertical; margin-bottom:12px; border-radius: 10px;"></textarea>
+                            
+                            <button class="desine-btn" style="background:#4338ca; width:100%; margin:0; padding: 14px; border-radius: 12px; font-size: 1rem; font-weight: 800;" onclick="publishContentToClass()">
+                                <i class="fas fa-paper-plane" style="margin-left: 8px;"></i> نشر المحتوى للطلاب
+                            </button>
+                        </div>
+
+                        <!-- قسم الطلاب المنضمين - يظهر فقط للمعلم -->
+                        <div id="students_section_container">
+                            <hr style="margin: 30px 0; border: none; border-top: 1.5px solid #e2e8f0;">
+
+                            <h4 style="color:#059669; text-align:right; font-size: 1.05rem; font-weight: 800;">
+                                <i class="fas fa-users" style="margin-left: 8px;"></i> قائمة الطلاب المنضمين للفصل
+                            </h4>
+                            <div id="single_cls_students_list" style="background:#f8fafc; padding:18px; border-radius:14px; border:1.5px solid #cbd5e1; min-height:60px; text-align:right;">جاري تحميل الطلاب...</div>
+                        </div>
+                        
+                    </div>
+                </div>
+                <br><br>
+            </div>
+
+            <!-- ===== صفحة الإعدادات ===== -->
+            <div id="page_setting" class="Dnone">
+                <div class="custom-warning-nahj">
+                    <strong style="color: #b45309; display: block; margin-bottom: 6px; font-size: 1.05em;"><i class="fas fa-exclamation-triangle"></i> تنبيه هام:</strong>
+                    <p style="line-height: 1.6; margin: 0;">منصة نهج الاوائل لا تتبع اي مدرسة اهلية بالواقع فالحذر من هذه المدارس الاهلية التي تنتحل اسم نهج الاوائل وكذلك المعاهد فهي لاتمت بأي صلة لنهج لا من قريب ولامن بعيد.</p>
+                </div>
+                <div style="text-align:center;">
+                    <button class="desine-btn sett" onclick="checkTeacherAccess()" style="display:inline-block; width:90%; max-width:450px;"><i class="fas fa-chalkboard-teacher"></i> الدخول لوضع المعلم ( لوحة التحكم )</button>
+                    <button class="desine-btn sett" id="logout_btn" onclick="teacherLogout()" style="display:none; width:90%; max-width:450px; background:#fee2e2; color:#dc2626; border-color:#fca5a5 !important;"><i class="fas fa-sign-out-alt"></i> تسجيل الخروج من وضع المعلم</button>
+                    <button class="desine-btn sett" onclick="go_page('page_home')" style="display:inline-block; width:90%; max-width:450px;"><i class="fas fa-graduation-cap"></i> العودة لواجهة الطالب (الرئيسية)</button>
+                </div>
+                
+                <div style="text-align: center; margin-top: 25px;">
+                    <p style="font-weight: 800; color: var(--primary);">روابط ومنصات نهج الأوائل</p>
+                </div>
+                <div style="text-align:center;">
+                    <button class="desine-btn sett" onclick="openExternalLink('https://t.me/nahg2023/11766')" style="display:inline-block; width:90%; max-width:450px;"><i class="fab fa-telegram-plane"></i> دليل منصة نهج الأوائل على التليجرام</button>
+                    <button class="desine-btn sett" onclick="openExternalLink('https://whatsapp.com/channel/0029VaDEiOtEFeXkCX9nnW1I')" style="display:inline-block; width:90%; max-width:450px;"><i class="fab fa-whatsapp"></i> قناة نهج الأوائل للواتساب</button>
+                    <button class="desine-btn sett" onclick="openExternalLink('https://whatsapp.com/channel/0029Vb8OCFxEAKWDCwCVBb1D')" style="display:inline-block; width:90%; max-width:450px;"><i class="fab fa-whatsapp"></i> قناة نهج الأوائل للواتساب (ثالث ثانوي)</button>
+                    <button class="desine-btn sett" onclick="openExternalLink('https://whatsapp.com/channel/0029VbCwhmx1noz8Tv193G2Q')" style="display:inline-block; width:90%; max-width:450px;"><i class="fab fa-whatsapp"></i> قناة نهج الأوائل للواتساب (تاسع)</button>
+                    <button class="desine-btn sett" onclick="openExternalLink('https://nahgalawelplatform.blogspot.com/2025/08/blog-post.html')" style="display:inline-block; width:90%; max-width:450px; background:#eef2ff;"><i class="fas fa-globe"></i> منصة الرياضيات (تاسع + ثالث ثانوي)</button>
+                    <button class="desine-btn sett" onclick="openExternalLink('https://nahgalawelplatform.blogspot.com/2025/06/blog-post_26.html')" style="display:inline-block; width:90%; max-width:450px; background:#eef2ff;"><i class="fas fa-globe"></i> منصة نهج الأوائل (ثالث ثانوي)</button>
+                    <button class="desine-btn sett" onclick="openExternalLink('https://nahgalawelplatform.blogspot.com/2025/06/blog-post_27.html')" style="display:inline-block; width:90%; max-width:450px; background:#eef2ff;"><i class="fas fa-globe"></i> منصة نهج الأوائل (تاسع)</button>
+                </div>
+                <p id='loginEmail' style="text-align:center; font-weight:800; color:var(--text-muted); margin-top:15px;"></p>
+                <div style="padding-bottom: 40px;"></div>
+            </div>
+        </div>
+
+        <!-- ===== نافذة تسجيل دخول المعلم ===== -->
+        <div class='popup_login' style="display: none;">
+            <div class='inner' style="background:#fff; padding:30px; border-radius:16px; width:90%; max-width:380px; text-align:right; box-shadow:0 25px 50px rgba(0,0,0,0.25);">
+                <h3 style="color:var(--primary); text-align:center; margin-top:0;">تسجيل دخول المعلم</h3>
+                <p style="font-size:0.85rem; color:var(--text-muted); text-align:center;">أدخل بريدك الإلكتروني لإدارة اختباراتك ونشرها</p>
+                <br>
+                <label style="display:block; text-align:right; font-weight:800;">البريد الالكتروني</label>
+                <input class='inputMyApp' id='email_te' type='email' style="text-align:right; width:100%;"/><br>
+                
+                <label style="display:block; text-align:right; font-weight:800; margin-top:10px;">كلمة المرور</label>
+                <input class='inputMyApp' id='pass_te' type='password' style="text-align:right; width:100%;"/><br><br>
+                
+                <button onclick='login($("#email_te").val(), $("#pass_te").val())' class='desine-btn' style="width:100%; margin:5px 0;">دخول / تسجيل</button>
+                <button onclick='$(".popup_login").fadeOut()' class='desine-btn' style="width:100%; background:#64748b; margin:5px 0;">إلغاء</button>
+                <img id="load_login" src="load.gif" class="Dnone" style="margin:10px auto; display:block; width:30px;"/>
+            </div>
+        </div>
+
+        <!-- ===== الفوتر السفلي الثابت ===== -->
+        <div id="nav-bottom">
+            <table>
+                <tr>
+                    <td onclick="go_page('page_setting')"><i class="fas fa-cog"></i><br><span>الإعدادات</span></td>
+                    <td onclick="goClassroomsPage()"><i class="fas fa-users"></i><br><span>الفصل</span></td>
+                    <td onclick="checkTeacherAccessForNav()"><i class="fas fa-tasks"></i><br><span>اختباراتي</span></td>
+                    <td onclick="go_page('page_home')"><i class="fas fa-home"></i><br><span>الرئيسية</span></td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <!-- ===== نافذة دليل إنشاء الاختبار ===== -->
+    <div id="teacher_guide_popup" class="Dnone" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:99999; display:flex; align-items:center; justify-content:center;">
+        <div style="background:#fff; padding:25px; border-radius:16px; width:90%; max-width:420px; text-align:right; box-shadow:0 20px 25px -5px rgba(0,0,0,0.2);">
+            <h3 style="color:var(--primary); margin-top:0; text-align:center;"><i class="fas fa-book-open"></i> دليل إنشاء الاختبار للمعلم</h3>
+            <hr>
+            <p style="font-size:0.95rem; line-height:1.8; color:#1e293b; text-align:right;">
+                1. أدخل عنوان الاختبار والنبذة الوصفية.<br>
+                2. اختر المادة الدراسية من القائمة.<br>
+                3. اضغط على زر <b>"أضف سؤال جديد"</b> لبناء الأسئلة.<br>
+                4. اضغط على زر <b>"فتح صندوق الرموز العلمية"</b> لنسخ الأسس والمتغيرات والرموز الفيزيائية والكيميائية.<br>
+                5. الصق الرموز في حقل السؤال أو الإجابة حسب الحاجة.<br>
+                6. حدد الخيار الصحيح لكل سؤال عبر زر الاختيار (الراديو باليسار).<br>
+                7. اضغط على <b>"حفظ ونشر الاختبار سحابياً"</b> للحصول على رقم الاختبار.
+            </p>
+            <button type="button" class="desine-btn" style="width:100%; background:#64748b; margin-top:10px;" onclick="$('#teacher_guide_popup').fadeOut()">فهمت، إغلاق</button>
+        </div>
+    </div>
+
+    <!-- ========== مكتبات التطبيق ========== -->
+    <script src="script.js"></script>
+    <script src="goTo_pages.js"></script>
+    <script src="home.js"></script>
+    <script src="mytest.js"></script>
+    <script src="newtest.js"></script>
+    <script src="page_result.js"></script>
+    <script src="search.js"></script>
+    
+    <!-- ========== دوال مساعدة ========== -->
+    <script>
+        function showTeacherNotice() {
+            alert('خاص بالمعلمين: للدخول إلى لوحة إنشاء الاختبارات وإدارتها، يرجى الذهاب إلى صفحة (الإعدادات) في القائمة السفلية والضغط على خيار (الدخول لوضع المعلم).');
+            go_page('page_setting');
+        }
+        
+        function showTeacherGuideModal() {
+            $('#teacher_guide_popup').css('display', 'flex');
+        }
+        
+        function checkTeacherAccess() {
+            if (localStorage.getItem('loginState') === 'login=OK') {
+                go_page('prev_exam');
+            } else {
+                $('.popup_login').fadeIn(200).css('display', 'flex');
+            }
+        }
+        
+        function checkTeacherAccessForNav() {
+            if (localStorage.getItem('loginState') === 'login=OK') {
+                go_page('prev_exam');
+            } else {
+                alert('يجب تسجيل الدخول كمعلم أولاً من صفحة الإعدادات للوصول إلى لوحة اختباراتك.');
+                go_page('page_setting');
+            }
+        }
+        
+        // دالة تبديل ظهور صندوق الرموز
+        function toggleSymbols() {
+            var container = document.getElementById('symbols_container');
+            var btn = document.getElementById('toggleSymbolsBtn');
+            if (container.classList.contains('Dnone')) {
+                container.classList.remove('Dnone');
+                btn.innerHTML = '<i class="fas fa-times"></i> إخفاء صندوق الرموز العلمية';
+            } else {
+                container.classList.add('Dnone');
+                btn.innerHTML = '<i class="fas fa-copy"></i> فتح صندوق الرموز العلمية';
+            }
+        }
+        
+        // دالة نسخ الرمز
+        function copySymbol(element) {
+            const symbol = element.textContent.trim();
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(symbol).then(() => {
+                    showCopyFeedback(element);
+                }).catch(() => {
+                    fallbackCopy(symbol, element);
+                });
+            } else {
+                fallbackCopy(symbol, element);
+            }
+        }
+        
+        function fallbackCopy(text, element) {
+            const tempInput = document.createElement('input');
+            tempInput.value = text;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempInput);
+            showCopyFeedback(element);
+        }
+        
+        function showCopyFeedback(element) {
+            const originalText = element.textContent;
+            const originalBg = element.style.background;
+            element.style.background = '#10b981';
+            element.textContent = '✓ تم النسخ';
+            setTimeout(() => {
+                element.textContent = originalText;
+                element.style.background = originalBg || '';
+            }, 1500);
+        }
+    </script>
+</body>
+</html>
