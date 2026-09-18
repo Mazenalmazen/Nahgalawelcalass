@@ -5,32 +5,26 @@
     <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width">
     <title>منصة نهج الأوائل - الفصول الإلكترونية</title>
     
-    <!-- ========== خطوط Google Fonts ========== -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=STIX+Two+Math:wght@400;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Math&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Math&amp;display=swap" rel="stylesheet">
     
-    <!-- ========== PWA ========== -->
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#4f46e5">
     <meta name="color-scheme" content="light">
     <meta name="format-detection" content="telephone=no">
     <meta name="msapplication-tap-highlight" content="no">
     
-    <!-- ========== المكتبات الخارجية ========== -->
     <link rel="stylesheet" type="text/css" href="normalize.css">
-    <!-- تم تغيير رابط Font Awesome إلى المسار المحلي -->
-    <link rel="stylesheet" type="text/css" href="css/all.min.css">
+    <link rel="stylesheet" type="text/css" href="all.min.css">
     <link rel="stylesheet" href="animate.css">
     
-    <!-- ========== التنسيق الرئيسي ========== -->
     <link rel="stylesheet" type="text/css" href="style.css">
     
-    <!-- ========== Supabase ========== -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         const SUPABASE_URL = 'https://dqshuhsuvblresvaaifr.supabase.co';
@@ -38,7 +32,6 @@
         window._supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     </script>
     
-    <!-- ========== jQuery والمكتبات المساعدة ========== -->
     <script src="jquery-3.1.1.min.js"></script>
     <script src="jquery-ui.min.js"></script>
     <script src="jquery.ns-autogrow.min.js"></script>
@@ -55,7 +48,6 @@
 </head>
 <body lang="ar">
     <div id='boody'>
-        <!-- ========== الهيدر ========== -->
         <header>
             <div class="contaner">
                 <img src="icon48x48.png"/>
@@ -63,7 +55,6 @@
             </div>
         </header>
 
-        <!-- ========== المحتوى الرئيسي ========== -->
         <div class="my_pages">
             
             <!-- ===== الصفحة الرئيسية ===== -->
@@ -101,24 +92,22 @@
                     </div>
                 </div>
                 
-                <div id="exam_saved" class="tbl_exam_saved">
-                    <table>
-                        <thead>
-                            <tr>
-                                <td colspan="3">الاختبارات المحفوظة محلياً</td>
-                            </tr>
-                            <tr>
-                                <td>اسم الاختبار</td>
-                                <td>الرقم</td>
-                                <td>الإجراء</td>
-                            </tr>
-                        </thead>
-                        <tbody id="exam_loaded_forAdd">
-                            <tr>
-                                <td colspan="3">لم تقم بحفظ أي اختبار محلياً حتى الآن</td>
-                            </tr>
-                        </tbody>
-                    </table>
+                <!-- ===== بطاقات الاختبارات المحفوظة ===== -->
+                <div id="exam_saved" style="margin-top: 30px;">
+                    <h3 style="text-align:center; color:var(--primary); margin-bottom:10px;">
+                        <i class="fas fa-bookmark"></i> الاختبارات المحفوظة
+                    </h3>
+                    
+                    <!-- زر التحديث العام للاختبارات -->
+                    <div style="text-align:center; margin-bottom:15px;">
+                        <button class="desine-btn" onclick="updateAllSavedExamsFromCloud()" style="background:#f59e0b; display:inline-block; padding:10px 25px; font-size:0.9rem; margin:0;">
+                            <i class="fas fa-sync-alt"></i> تحديث جميع الاختبارات من السحابة
+                        </button>
+                    </div>
+                    
+                    <div id="exam_loaded_forAdd">
+                        <div style="text-align:center; padding:20px; color:var(--text-muted);">لم تقم بحفظ أي اختبار محلياً حتى الآن</div>
+                    </div>
                 </div>
             </div>
 
@@ -175,7 +164,6 @@
                 </div>
                 <h3>لوحة بناء الأسئلة</h3>
                 
-                <!-- اختيار المادة -->
                 <div style="width:90%; max-width:450px; margin:10px auto;">
                     <label style="display:block; text-align:right; font-weight:800; margin-bottom:8px; color:var(--primary);"><i class="fas fa-flask"></i> المادة الدراسية:</label>
                     <select class="inputMyApp" id="exam_subject" style="text-align:right;">
@@ -236,17 +224,38 @@
                 <hr>
                 <br>
                 
-                <!-- ===== زر فتح صندوق الرموز ===== -->
                 <button id="toggleSymbolsBtn" class="desine-btn" onclick="toggleSymbols()" style="background:#4f46e5; width:92%; max-width:650px; margin:10px auto; display:block; border-radius:10px;">
                     <i class="fas fa-copy"></i> فتح صندوق الرموز العلمية
                 </button>
 
-                <!-- ===== صندوق الرموز العلمية (مخفي افتراضياً) ===== -->
                 <div id="symbols_container" class="Dnone" style="width:100%;">
                     <div style="width:92%; max-width:650px; margin:15px auto; padding:15px; background:#f8fafc; border-radius:12px; border:1.5px solid var(--border-color);">
                         <p style="text-align:right; font-weight:800; margin:0 0 10px 0; color:var(--primary);"><i class="fas fa-copy"></i> صندوق الرموز العلمية (انسخ ما تحتاجه)</p>
                         <div class="symbol-box" style="display:flex; flex-wrap:wrap; gap:6px; justify-content:center; padding:12px; background:#fff; border-radius:8px; border:1px solid #e2e8f0;">
-                            <!-- المجموعة الأولى: رموز المنطق والمجموعات -->
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ j">j</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ √">√</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ 3">3</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ 2">2</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ π">π</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ y">y</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ β">β</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ a">a</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ∞">∞</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ Σ">Σ</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ≠">≠</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ≤">≤</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ≥">≥</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ μ">μ</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ λ">λ</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ C">C</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ D">D</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ∩">∩</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ U">U</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ≈">≈</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ∇">∇</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ Δ">Δ</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ∃">∃</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ∀">∀</span>
                             <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ط">ط</span>
                             <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ⋃">⋃</span>
                             <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ت">ت</span>
@@ -264,15 +273,9 @@
                             <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ∋">∋</span>
                             <span class="symbol-item" onclick="copySymbol(this)" title="انسخ شہ">شہ</span>
                             <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ∅">∅</span>
-                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ π">π</span>
                             <span class="symbol-item" onclick="copySymbol(this)" title="انسخ <"><</span>
-                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ≤">≤</span>
-                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ≥">≥</span>
                             <span class="symbol-item" onclick="copySymbol(this)" title="انسخ >">></span>
                             <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ∪">∪</span>
-                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ∩">∩</span>
-                            
-                            <!-- الأسس العلوية -->
                             <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ¹">¹</span>
                             <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ²">²</span>
                             <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ³">³</span>
@@ -290,8 +293,6 @@
                             <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ⁿ">ⁿ</span>
                             <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ⁱ">ⁱ</span>
                             <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ˣ">ˣ</span>
-                            
-                            <!-- الأسس السفلية والرموز الخاصة -->
                             <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ₁">₁</span>
                             <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ₂">₂</span>
                             <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ₃">₃</span>
@@ -308,14 +309,9 @@
                             <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ₋">₋</span>
                             <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ₊">₊</span>
                             <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ₌">₌</span>
-                            
-                            <!-- رموز رياضية وحروف يونانية -->
-                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ∀">∀</span>
-                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ∃">∃</span>
                             <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ∫">∫</span>
                             <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ∑">∑</span>
                             <span class="symbol-item" onclick="copySymbol(this)" title="انسخ f">f</span>
-                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ∞">∞</span>
                             <span class="symbol-item" onclick="copySymbol(this)" title="انسخ -">-</span>
                             <span class="symbol-item" onclick="copySymbol(this)" title="انسخ +">+</span>
                             <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ∆">∆</span>
@@ -338,15 +334,9 @@
                             <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ｌ">ｌ</span>
                             <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ⇔">⇔</span>
                             <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ∴">∴</span>
-                            
-                            <!-- الحروف اليونانية الصغيرة -->
-                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ λ">λ</span>
-                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ μ">μ</span>
                             <span class="symbol-item" onclick="copySymbol(this)" title="انسخ α">α</span>
-                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ β">β</span>
                             <span class="symbol-item" onclick="copySymbol(this)" title="انسخ γ">γ</span>
-                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ π">π</span>
-                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ∫">∫</span>
+                            <span class="symbol-item" onclick="copySymbol(this)" title="انسخ ♣">♣</span>
                         </div>
                         <p style="text-align:right; font-size:0.8rem; color:var(--text-muted); margin:8px 0 0 0;">
                             <i class="fas fa-info-circle"></i> انقر على أي رمز لنسخه تلقائياً، ثم الصقه في حقل السؤال أو الإجابة.
@@ -376,25 +366,7 @@
                         <option value="name">النتائج حسب اسم الطالب</option>
                     </select>
                 </div>
-                <table>
-                    <thead>
-                        <tr>
-                            <td colspan="5">سجل نتائج الطلاب</td>
-                        </tr>
-                        <tr>
-                            <th>الرقم</th>
-                            <th>اسم الطالب</th>
-                            <th>معلومات إضافية</th>
-                            <th>تاريخ التسليم</th>
-                            <th>الدرجة</th>
-                        </tr>
-                    </thead>
-                    <tbody id="showresult">
-                        <tr>
-                            <td colspan="5"><img id="img_load_result" src="load.gif" /></td>
-                        </tr>
-                    </tbody>
-                </table>
+                <div id="showresult"></div>
                 <div style="text-align:center;">
                     <button class="desine-btn btn-save" onclick="save_excel()" style="display:inline-block; margin:5px;"><i class="fas fa-file-excel"></i> تصدير Excel</button>
                     <button class="desine-btn btn-save" onclick="delete_result()" style="background:var(--danger); display:inline-block; margin:5px;"><i class="fas fa-trash-alt"></i> حذف جميع النتائج</button>
@@ -405,206 +377,90 @@
             <!-- ===== صفحة اختباراتي ===== -->
             <div id="prev_exam" class="Dnone">
                 <div id="exam_saved_te" class="tbl_exam_saved teacher">
-                    
                     <div style="text-align:center; padding:25px 15px;">
-                        <button class="desine-btn" onclick="go_page('page_newtest')" style="
-                            display:inline-flex;
-                            align-items:center;
-                            justify-content:center;
-                            gap:12px;
-                            width:92%;
-                            max-width:480px;
-                            padding:20px 35px;
-                            font-size:1.2rem;
-                            font-weight:900;
-                            background:linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #2563eb 100%);
-                            color:#ffffff;
-                            border:none;
-                            border-radius:18px;
-                            box-shadow:0 10px 30px rgba(79,70,229,0.4), 0 4px 12px rgba(0,0,0,0.1);
-                            cursor:pointer;
-                            transition:all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-                            position:relative;
-                            overflow:hidden;
-                            letter-spacing:0.5px;
-                            font-family:'Cairo', 'Tajawal', sans-serif;
-                        " onmouseover="this.style.transform='translateY(-4px) scale(1.03)'; this.style.boxShadow='0 15px 40px rgba(79,70,229,0.5), 0 8px 20px rgba(0,0,0,0.15)'" onmouseout="this.style.transform='translateY(0) scale(1)'; this.style.boxShadow='0 10px 30px rgba(79,70,229,0.4), 0 4px 12px rgba(0,0,0,0.1)'" onmousedown="this.style.transform='translateY(-1px) scale(0.97)'" onmouseup="this.style.transform='translateY(-4px) scale(1.03)'">
-                            <span style="
-                                display:flex;
-                                align-items:center;
-                                justify-content:center;
-                                width:46px;
-                                height:46px;
-                                background:rgba(255,255,255,0.25);
-                                border-radius:50%;
-                                backdrop-filter:blur(8px);
-                                border:2px solid rgba(255,255,255,0.3);
-                                flex-shrink:0;
-                            ">
+                        <button class="desine-btn" onclick="go_page('page_newtest')" style="display:inline-flex; align-items:center; justify-content:center; gap:12px; width:92%; max-width:480px; padding:20px 35px; font-size:1.2rem; font-weight:900; background:linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #2563eb 100%); color:#ffffff; border:none; border-radius:18px; box-shadow:0 10px 30px rgba(79,70,229,0.4), 0 4px 12px rgba(0,0,0,0.1); cursor:pointer; transition:all 0.3s cubic-bezier(0.4, 0, 0.2, 1); position:relative; overflow:hidden; letter-spacing:0.5px; font-family:'Cairo', 'Tajawal', sans-serif;" onmouseover="this.style.transform='translateY(-4px) scale(1.03)'; this.style.boxShadow='0 15px 40px rgba(79,70,229,0.5), 0 8px 20px rgba(0,0,0,0.15)'" onmouseout="this.style.transform='translateY(0) scale(1)'; this.style.boxShadow='0 10px 30px rgba(79,70,229,0.4), 0 4px 12px rgba(0,0,0,0.1)'" onmousedown="this.style.transform='translateY(-1px) scale(0.97)'" onmouseup="this.style.transform='translateY(-4px) scale(1.03)'">
+                            <span style="display:flex; align-items:center; justify-content:center; width:46px; height:46px; background:rgba(255,255,255,0.25); border-radius:50%; backdrop-filter:blur(8px); border:2px solid rgba(255,255,255,0.3); flex-shrink:0;">
                                 <i class="fas fa-plus" style="font-size:1.4rem; color:#fff;"></i>
                             </span>
                             <span>إنشاء اختبار جديد</span>
                         </button>
                     </div>
-                    
-                    <table>
-                        <thead>
-                            <tr>
-                                <td colspan="3"><span>اختبارات المعلم المنشورة</span></td>
-                            </tr>
-                            <tr>
-                                <td>اسم الاختبار</td>
-                                <td>الرقم</td>
-                                <td>خيارات التحكم</td>
-                            </tr>
-                        </thead>
-                        <tbody id="exam_saved_forAdd">
-                            <tr>
-                                <td colspan="3">لم تقم بإنشاء أي اختبار حتى الآن</td>
-                            </tr>
-                        </tbody>
-                    </table>
+                    <div id="exam_saved_forAdd"></div>
                 </div>
             </div>
 
-            <!-- ===== صفحة الفصول الإلكترونية ===== -->
+            <!-- ===== صفحة الفصول الإلكترونية (نسخة المستخدم) ===== -->
             <div id="page_classrooms" class="Dnone">
                 <br>
                 <h3 style="color:var(--primary);"><i class="fas fa-users-class"></i> الفصول الدراسية الإلكترونية</h3>
                 
-                <div style="background:#fff; width:92%; max-width:500px; margin:20px auto; padding:20px; border-radius:14px; border:1.5px solid var(--border-color); text-align:right;">
+                <!-- صندوق الانضمام -->
+                <div id="student_class_section" style="background:#fff; width:92%; max-width:500px; margin:20px auto; padding:20px; border-radius:14px; border:1.5px solid var(--border-color); text-align:right;">
                     <h4 style="color:#0284c7; margin-top:0;"><i class="fas fa-sign-in-alt"></i> انضم إلى فصل دراسي</h4>
                     <p style="font-size:0.85rem; color:var(--text-muted);">ادخل اسمك ورمز الانضمام المسلّم من معلمك:</p>
                     <input class="inputMyApp" id="student_join_name" type="text" placeholder="اسمك الثلاثي" style="text-align:right; width:100%;"><br>
-                    
                     <div style="display:flex; align-items:center; gap:0; width:100%; margin:8px 0; border:1.5px solid var(--border-color); border-radius:10px; overflow:hidden; background:#f8fafc;">
                         <span style="background:#e2e8f0; color:#475569; padding:12px 14px; font-weight:800; font-size:0.95rem; border-left:1.5px solid var(--border-color); white-space:nowrap; user-select:none;">CLS-</span>
                         <input class="inputMyApp" id="student_join_code" type="number" inputmode="numeric" pattern="[0-9]*" placeholder="7601" style="text-align:center; width:100%; border:none; background:transparent; margin:0; border-radius:0; font-weight:800; letter-spacing:2px; font-size:1.1rem;">
                     </div>
-                    
                     <button class="desine-btn" onclick="studentJoinClassroom()" style="width:100%; background:#10b981; margin-top:5px;"><i class="fas fa-check"></i> انضمام للفصل</button>
                 </div>
-
+                
                 <br>
-                <table>
-                    <thead>
-                        <tr>
-                            <td colspan="3"><span>قائمة الفصول الدراسية</span></td>
-                        </tr>
-                        <tr>
-                            <td>اسم الفصل</td>
-                            <td>الرمز</td>
-                            <td>إجراء</td>
-                        </tr>
-                    </thead>
-                    <tbody id="classrooms_list_add">
-                        <tr>
-                            <td colspan="3">لا توجد فصول مسجلة حتى الآن</td>
-                        </tr>
-                    </tbody>
-                </table>
+                
+                <!-- عنوان قائمة الفصول مع زر التحديث العام -->
+                <h4 style="text-align:center; color:var(--primary); margin-bottom:10px;">
+                    <i class="fas fa-list"></i> الفصول المنضم إليها
+                </h4>
+                
+                <div style="text-align:center; margin-bottom:15px;">
+                    <button class="desine-btn" onclick="updateAllJoinedClassesFromCloud()" style="background:#f59e0b; display:inline-block; padding:10px 25px; font-size:0.9rem; margin:0;">
+                        <i class="fas fa-sync-alt"></i> تحديث الفصول من السحابة
+                    </button>
+                </div>
+                
+                <div id="classrooms_list_add"></div>
                 <div style="text-align:center; margin-top:20px;">
                     <button class="desine-btn" style="background:#64748b;" onclick="go_page('page_home')">العودة للرئيسية</button>
                 </div>
                 <br><br>
             </div>
 
-            <!-- ===== صفحة إدارة الفصل المستقلة ===== -->
+            <!-- ===== صفحة عرض الفصل ===== -->
             <div id="page_classroom_single" class="Dnone" style="padding: 15px;">
                 <div style="max-width: 650px; margin: auto; background: #fff; border-radius: 20px; border: 1.5px solid var(--border-color); box-shadow: 0 8px 30px rgba(0,0,0,0.08); overflow: hidden; text-align: right;">
-                    
-                    <!-- الهيدر العلوي المميز -->
                     <div style="background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #2563eb 100%); padding: 20px 25px 25px 25px; position: relative;">
-                        
-                        <!-- زر العودة العائم -->
                         <div style="position: absolute; top: 15px; left: 15px; z-index: 10;">
-                            <button class="desine-btn" onclick="goClassroomsPage()" style="
-                                background: rgba(255,255,255,0.15);
-                                backdrop-filter: blur(10px);
-                                color: #fff;
-                                padding: 10px 16px;
-                                font-size: 0.8rem;
-                                font-weight: 700;
-                                border: 1.5px solid rgba(255,255,255,0.25);
-                                border-radius: 12px;
-                                margin: 0;
-                                transition: all 0.3s ease;
-                                display: flex;
-                                align-items: center;
-                                gap: 6px;
-                            " onmouseover="this.style.background='rgba(255,255,255,0.3)'; this.style.transform='translateX(-3px)'" onmouseout="this.style.background='rgba(255,255,255,0.15)'; this.style.transform='translateX(0)'">
+                            <button class="desine-btn" onclick="goClassroomsPage()" style="background: rgba(255,255,255,0.15); backdrop-filter: blur(10px); color: #fff; padding: 10px 16px; font-size: 0.8rem; font-weight: 700; border: 1.5px solid rgba(255,255,255,0.25); border-radius: 12px; margin: 0; transition: all 0.3s ease; display: flex; align-items: center; gap: 6px;" onmouseover="this.style.background='rgba(255,255,255,0.3)'; this.style.transform='translateX(-3px)'" onmouseout="this.style.background='rgba(255,255,255,0.15)'; this.style.transform='translateX(0)'">
                                 <i class="fas fa-arrow-right"></i>
                                 <span>عودة</span>
                             </button>
                         </div>
-                        
-                        <!-- عنوان الفصل -->
                         <div style="padding-left: 90px; min-height: 45px; display: flex; align-items: center;">
-                            <h2 id="single_cls_title" style="
-                                color: #fff;
-                                margin: 0;
-                                font-size: 1.25rem;
-                                font-weight: 900;
-                                text-shadow: 0 2px 4px rgba(0,0,0,0.2);
-                                line-height: 1.4;
-                                word-break: break-word;
-                            ">إدارة الفصل الدراسي</h2>
+                            <h2 id="single_cls_title" style="color: #fff; margin: 0; font-size: 1.25rem; font-weight: 900; text-shadow: 0 2px 4px rgba(0,0,0,0.2); line-height: 1.4; word-break: break-word;">الفصل الدراسي</h2>
                         </div>
-                        
-                        <!-- رمز الانضمام -->
                         <div style="margin-top: 12px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
                             <span style="color: rgba(255,255,255,0.85); font-size: 0.85rem; font-weight: 600;">رمز الانضمام الخاص بالفصل:</span>
-                            <div style="
-                                background: rgba(255,255,255,0.2);
-                                backdrop-filter: blur(10px);
-                                border: 1.5px solid rgba(255,255,255,0.35);
-                                border-radius: 12px;
-                                padding: 6px 16px;
-                                display: inline-flex;
-                                align-items: center;
-                                gap: 8px;
-                            ">
+                            <div style="background: rgba(255,255,255,0.2); backdrop-filter: blur(10px); border: 1.5px solid rgba(255,255,255,0.35); border-radius: 12px; padding: 6px 16px; display: inline-flex; align-items: center; gap: 8px;">
                                 <span style="color: rgba(255,255,255,0.7); font-size: 0.8rem; font-weight: 700;">بالفصل:</span>
-                                <code id="single_cls_code" style="
-                                    background: transparent;
-                                    color: #fff;
-                                    font-size: 1.1rem;
-                                    font-weight: 900;
-                                    letter-spacing: 1px;
-                                    padding: 0;
-                                ">CLS-7601</code>
+                                <code id="single_cls_code" style="background: transparent; color: #fff; font-size: 1.1rem; font-weight: 900; letter-spacing: 1px; padding: 0;">CLS-7601</code>
+                                <span class="copy-icon" onclick="event.stopPropagation(); copyToClipboard('CLS-7601')" style="color:#fff; background:rgba(255,255,255,0.2); padding:0 8px; border-radius:4px; cursor:pointer;">📋</span>
                             </div>
                         </div>
-                        
-                        <!-- ديكور زخرفي -->
-                        <div style="
-                            position: absolute;
-                            bottom: -1px;
-                            left: 0;
-                            right: 0;
-                            height: 25px;
-                            background: #fff;
-                            border-radius: 25px 25px 0 0;
-                        "></div>
+                        <div style="position: absolute; bottom: -1px; left: 0; right: 0; height: 25px; background: #fff; border-radius: 25px 25px 0 0;"></div>
                     </div>
-                    
-                    <!-- محتوى الصفحة -->
                     <div style="padding: 25px;">
+                        <div id="inside_join_section" style="background:#f0fdf4; border:2px solid #86efac; border-radius:14px; padding:18px; margin-bottom:20px; text-align:right; display:none;">
+                            <h4 style="color:#059669; margin:0 0 10px 0;"><i class="fas fa-user-plus"></i> انضم إلى هذا الفصل</h4>
+                            <p style="font-size:0.85rem; color:#166534;">أدخل اسمك للانضمام إلى هذا الفصل الدراسي:</p>
+                            <input class="inputMyApp" id="inside_join_name" type="text" placeholder="اسمك الثلاثي" style="text-align:right; width:100%; margin:5px 0;">
+                            <button class="desine-btn" style="background:#10b981; width:100%; margin:5px 0;" onclick="insideJoinClassroom()"><i class="fas fa-check"></i> انضمام للفصل</button>
+                        </div>
                         
                         <h4 style="color:#0284c7; text-align:right; margin-top: 0; font-size: 1.05rem; font-weight: 800;">
                             <i class="fas fa-book" style="margin-left: 8px;"></i> اختبارات الفصل المنشورة
                         </h4>
                         <div id="single_cls_exams_container" style="text-align:right; margin-bottom: 20px;">جاري التحميل...</div>
-                        
-                        <div id="teacher_add_exam_to_cls_box" class="Dnone" style="background:#f8fafc; padding:20px; border-radius:14px; border:1.5px solid #cbd5e1; margin-top:15px; text-align:right;">
-                            <label style="font-weight:800; display:block; margin-bottom:10px; color:#1e293b; font-size: 0.95rem;">ربط اختبار جديد بالفصل:</label>
-                            <div style="display: flex; gap: 10px; align-items: center;">
-                                <input class="inputMyApp" id="single_link_exam_num" type="number" placeholder="رقم الاختبار (مثال: 123456)" style="text-align:center; width:100%; margin:0; border-radius: 10px;">
-                                <button class="desine-btn" style="background:#10b981; margin:0; white-space: nowrap; padding: 12px 20px; border-radius: 10px;" onclick="publishExamToSingleClass()">
-                                    <i class="fas fa-link" style="margin-left: 6px;"></i> ربط
-                                </button>
-                            </div>
-                        </div>
 
                         <hr style="margin: 30px 0; border: none; border-top: 1.5px solid #e2e8f0;">
 
@@ -612,34 +468,13 @@
                             <i class="fas fa-bullhorn" style="margin-left: 8px;"></i> المحتوى والإعلانات التعليمية
                         </h4>
                         <div id="single_cls_content_container" style="margin-bottom:20px; text-align:right;">لا توجد محتويات أو إعلانات منشورة بعد.</div>
-                        
-                        <div id="teacher_add_content_box" class="Dnone" style="background:#f8fafc; padding:20px; border-radius:14px; border:1.5px solid #cbd5e1; text-align:right;">
-                            <h5 style="margin:0 0 12px 0; color:#1e293b; font-size:1rem; font-weight: 800;">إضافة محتوى جديد للفصل:</h5>
-                            
-                            <select class="inputMyApp" id="cls_content_type" style="width:100%; margin-bottom:12px; text-align:right; border-radius: 10px;">
-                                <option value="text">إعلان أو شرح نصي</option>
-                                <option value="link">زر رابط خارجي (موقع / مرجع / زووم)</option>
-                            </select>
 
-                            <input class="inputMyApp" id="cls_content_title" type="text" placeholder="عنوان المحتوى أو اسم الزر" style="text-align:right; width:100%; margin-bottom:12px; border-radius: 10px;">
-                            
-                            <textarea class="inputMyApp" id="cls_content_body" placeholder="اكتب تفاصيل الشرح أو السؤال أو الرابط هنا..." style="text-align:right; width:100%; height:90px; resize:vertical; margin-bottom:12px; border-radius: 10px;"></textarea>
-                            
-                            <button class="desine-btn" style="background:#4338ca; width:100%; margin:0; padding: 14px; border-radius: 12px; font-size: 1rem; font-weight: 800;" onclick="publishContentToClass()">
-                                <i class="fas fa-paper-plane" style="margin-left: 8px;"></i> نشر المحتوى للطلاب
-                            </button>
-                        </div>
+                        <hr style="margin: 30px 0; border: none; border-top: 1.5px solid #e2e8f0;">
 
-                        <!-- قسم الطلاب المنضمين - يظهر فقط للمعلم -->
-                        <div id="students_section_container">
-                            <hr style="margin: 30px 0; border: none; border-top: 1.5px solid #e2e8f0;">
-
-                            <h4 style="color:#059669; text-align:right; font-size: 1.05rem; font-weight: 800;">
-                                <i class="fas fa-users" style="margin-left: 8px;"></i> قائمة الطلاب المنضمين للفصل
-                            </h4>
-                            <div id="single_cls_students_list" style="background:#f8fafc; padding:18px; border-radius:14px; border:1.5px solid #cbd5e1; min-height:60px; text-align:right;">جاري تحميل الطلاب...</div>
-                        </div>
-                        
+                        <h4 style="color:#059669; text-align:right; font-size: 1.05rem; font-weight: 800;">
+                            <i class="fas fa-users" style="margin-left: 8px;"></i> قائمة الطلاب المنضمين للفصل
+                        </h4>
+                        <div id="single_cls_students_list" style="background:#f8fafc; padding:18px; border-radius:14px; border:1.5px solid #cbd5e1; min-height:60px; text-align:right;">جاري تحميل الطلاب...</div>
                     </div>
                 </div>
                 <br><br>
@@ -656,7 +491,6 @@
                     <button class="desine-btn sett" id="logout_btn" onclick="teacherLogout()" style="display:none; width:90%; max-width:450px; background:#fee2e2; color:#dc2626; border-color:#fca5a5 !important;"><i class="fas fa-sign-out-alt"></i> تسجيل الخروج من وضع المعلم</button>
                     <button class="desine-btn sett" onclick="go_page('page_home')" style="display:inline-block; width:90%; max-width:450px;"><i class="fas fa-graduation-cap"></i> العودة لواجهة الطالب (الرئيسية)</button>
                 </div>
-                
                 <div style="text-align: center; margin-top: 25px;">
                     <p style="font-weight: 800; color: var(--primary);">روابط ومنصات نهج الأوائل</p>
                 </div>
@@ -682,31 +516,29 @@
                 <br>
                 <label style="display:block; text-align:right; font-weight:800;">البريد الالكتروني</label>
                 <input class='inputMyApp' id='email_te' type='email' style="text-align:right; width:100%;"/><br>
-                
                 <label style="display:block; text-align:right; font-weight:800; margin-top:10px;">كلمة المرور</label>
                 <input class='inputMyApp' id='pass_te' type='password' style="text-align:right; width:100%;"/><br><br>
-                
                 <button onclick='login($("#email_te").val(), $("#pass_te").val())' class='desine-btn' style="width:100%; margin:5px 0;">دخول / تسجيل</button>
                 <button onclick='$(".popup_login").fadeOut()' class='desine-btn' style="width:100%; background:#64748b; margin:5px 0;">إلغاء</button>
                 <img id="load_login" src="load.gif" class="Dnone" style="margin:10px auto; display:block; width:30px;"/>
             </div>
         </div>
 
-        <!-- ===== الفوتر السفلي الثابت ===== -->
+        <!-- ===== الفوتر السفلي ===== -->
         <div id="nav-bottom">
             <table>
                 <tr>
-                    <td onclick="go_page('page_setting')"><i class="fas fa-cog"></i><br><span>الإعدادات</span></td>
-                    <td onclick="goClassroomsPage()"><i class="fas fa-users"></i><br><span>الفصل</span></td>
-                    <td onclick="checkTeacherAccessForNav()"><i class="fas fa-tasks"></i><br><span>اختباراتي</span></td>
-                    <td onclick="go_page('page_home')"><i class="fas fa-home"></i><br><span>الرئيسية</span></td>
+                    <td style="width:25%; text-align:center;" onclick="go_page('page_setting')"><i class="fas fa-cog"></i><br><span>الإعدادات</span></td>
+                    <td style="width:25%; text-align:center;" onclick="goClassroomsPage()"><i class="fas fa-users"></i><br><span>الفصل</span></td>
+                    <td style="width:25%; text-align:center;" onclick="checkTeacherAccessForNav()"><i class="fas fa-tasks"></i><br><span>اختباراتي</span></td>
+                    <td style="width:25%; text-align:center;" onclick="go_page('page_home')"><i class="fas fa-home"></i><br><span>الرئيسية</span></td>
                 </tr>
             </table>
         </div>
     </div>
 
     <!-- ===== نافذة دليل إنشاء الاختبار ===== -->
-    <div id="teacher_guide_popup" class="Dnone" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:99999; display:flex; align-items:center; justify-content:center;">
+    <div id="teacher_guide_popup" class="Dnone" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:99999; align-items:center; justify-content:center;">
         <div style="background:#fff; padding:25px; border-radius:16px; width:90%; max-width:420px; text-align:right; box-shadow:0 20px 25px -5px rgba(0,0,0,0.2);">
             <h3 style="color:var(--primary); margin-top:0; text-align:center;"><i class="fas fa-book-open"></i> دليل إنشاء الاختبار للمعلم</h3>
             <hr>
@@ -719,11 +551,10 @@
                 6. حدد الخيار الصحيح لكل سؤال عبر زر الاختيار (الراديو باليسار).<br>
                 7. اضغط على <b>"حفظ ونشر الاختبار سحابياً"</b> للحصول على رقم الاختبار.
             </p>
-            <button type="button" class="desine-btn" style="width:100%; background:#64748b; margin-top:10px;" onclick="$('#teacher_guide_popup').fadeOut()">فهمت، إغلاق</button>
+            <button type="button" class="desine-btn" style="width:100%; background:#64748b; margin-top:10px;" onclick="closeTeacherGuideModal()">فهمت، إغلاق</button>
         </div>
     </div>
 
-    <!-- ========== مكتبات التطبيق ========== -->
     <script src="script.js"></script>
     <script src="goTo_pages.js"></script>
     <script src="home.js"></script>
@@ -732,15 +563,23 @@
     <script src="page_result.js"></script>
     <script src="search.js"></script>
     
-    <!-- ========== دوال مساعدة ========== -->
     <script>
         function showTeacherNotice() {
-            alert('خاص بالمعلمين: للدخول إلى لوحة إنشاء الاختبارات وإدارتها، يرجى الذهاب إلى صفحة (الإعدادات) في القائمة السفلية والضغط على خيار (الدخول لوضع المعلم).');
+            Swal.fire({
+                icon: 'info',
+                title: 'خاص بالمعلمين',
+                text: 'للدخول إلى لوحة إنشاء الاختبارات وإدارتها، يرجى الذهاب إلى صفحة (الإعدادات) في القائمة السفلية والضغط على خيار (الدخول لوضع المعلم).',
+                confirmButtonText: 'حسناً'
+            });
             go_page('page_setting');
         }
         
         function showTeacherGuideModal() {
-            $('#teacher_guide_popup').css('display', 'flex');
+            $('#teacher_guide_popup').removeClass('Dnone').css('display', 'flex');
+        }
+        
+        function closeTeacherGuideModal() {
+            $('#teacher_guide_popup').css('display', 'none').addClass('Dnone');
         }
         
         function checkTeacherAccess() {
@@ -755,12 +594,17 @@
             if (localStorage.getItem('loginState') === 'login=OK') {
                 go_page('prev_exam');
             } else {
-                alert('يجب تسجيل الدخول كمعلم أولاً من صفحة الإعدادات للوصول إلى لوحة اختباراتك.');
-                go_page('page_setting');
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'تسجيل الدخول مطلوب',
+                    text: 'يجب تسجيل الدخول كمعلم أولاً من صفحة الإعدادات للوصول إلى لوحة اختباراتك.',
+                    confirmButtonText: 'انتقل للإعدادات'
+                }).then(() => {
+                    go_page('page_setting');
+                });
             }
         }
         
-        // دالة تبديل ظهور صندوق الرموز
         function toggleSymbols() {
             var container = document.getElementById('symbols_container');
             var btn = document.getElementById('toggleSymbolsBtn');
@@ -773,7 +617,6 @@
             }
         }
         
-        // دالة نسخ الرمز
         function copySymbol(element) {
             const symbol = element.textContent.trim();
             if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -806,6 +649,28 @@
                 element.textContent = originalText;
                 element.style.background = originalBg || '';
             }, 1500);
+        }
+
+        function copyToClipboard(text) {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(() => {
+                    alert('✅ تم نسخ: ' + text);
+                }).catch(() => {
+                    fallbackCopyText(text);
+                });
+            } else {
+                fallbackCopyText(text);
+            }
+        }
+
+        function fallbackCopyText(text) {
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+            alert('✅ تم نسخ: ' + text);
         }
     </script>
 </body>

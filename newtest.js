@@ -38,6 +38,7 @@ function finalizeLoginSuccess(email) {
     go_page('prev_exam');
 }
 
+// ==================== حفظ / نشر الاختبار ====================
 async function get_exam_data() {
     var t_name = $('#t_name').val();
     var t_info = $('#t_info').val();
@@ -72,6 +73,7 @@ async function get_exam_data() {
         random_answers: $('#RandomAnswers').is(':checked')
     };
 
+    // ===== بناء قائمة الأسئلة بالترتيب الأصلي مع حفظ مؤشر الإجابة الصحيحة =====
     var questions = [];
     $('.question_box').each(function() {
         var q_text = $(this).find('.inputAsk').val();
@@ -85,17 +87,17 @@ async function get_exam_data() {
                 }
             });
             
+            // الحصول على مؤشر الإجابة الصحيحة من الراديو المحدد
             var correctIndex = $(this).find('input[type="radio"]:checked').val() || 0;
             var cIndex = parseInt(correctIndex);
-            if (cIndex > 0 && options[cIndex]) {
-                var temp = options[0];
-                options[0] = options[cIndex];
-                options[cIndex] = temp;
-            }
+            // التأكد من أن المؤشر ضمن النطاق
+            if (cIndex >= options.length || cIndex < 0) cIndex = 0;
 
+            // ✅ حفظ الخيارات بالترتيب الأصلي تماماً مع مؤشر الإجابة الصحيحة
             questions.push({
                 question: q_text.trim(),
-                options: options
+                options: options,
+                correctIndex: cIndex
             });
         }
     });
@@ -157,79 +159,4 @@ async function get_exam_data() {
             readAll_exam_saveded_new('update');
         }
     }
-}
-
-// ===== تحميل الاختبار للتعديل (مع دعم الأزرار الجديدة) =====
-function editThisExam(examNum) {
-    window.editingExamNumber = examNum;
-    $('#load').show();
-    
-    window._supabase
-        .from('exams')
-        .select('*')
-        .eq('exam_number', examNum)
-        .single()
-        .then(({ data, error }) => {
-            $('#load').hide();
-            if (error || !data) {
-                alert('تعذر تحميل بيانات الاختبار للتعديل');
-                return;
-            }
-            $('#t_name').val(data.exam_name);
-            $('#t_info').val(data.exam_info);
-            $('#t_zoom_link').val(data.zoom_link || '');
-            
-            if (data.settings) {
-                $('#Pass_start_ckeck').prop('checked', data.settings.pass_start_check || false);
-                if(data.settings.pass_start_check) $('#input_Pass').show();
-                $('#t_pass_start').val(data.settings.t_pass_start || '');
-                $('#Time_test_ckeck').prop('checked', data.settings.time_test_check || false);
-                if(data.settings.time_test_check) $('#input_Time').show();
-                $('#Time_test').val(data.settings.time_test || '');
-                $('#Bank_test_ckeck').prop('checked', data.settings.bank_test_check || false);
-                if(data.settings.bank_test_check) $('#input_Bank').show();
-                $('#Bank_test').val(data.settings.bank_test || '');
-                $('#RandomAsk').prop('checked', data.settings.random_ask || false);
-                $('#RandomAnswers').prop('checked', data.settings.random_answers || false);
-            }
-            
-            $('#form_new_ask').html('');
-            questionCount = 0;
-            
-            if (data.exam_data && data.exam_data.questions) {
-                data.exam_data.questions.forEach(q => {
-                    // استخدام add_ask من script.js مع الأزرار الجديدة
-                    add_ask();
-                    let currentBox = $('#form_new_ask .question_box').last();
-                    currentBox.find('.inputAsk').val(q.question);
-                    let ansInputs = currentBox.find('.inputAns');
-                    if (q.options) {
-                        q.options.forEach((opt, idx) => {
-                            if (ansInputs[idx]) {
-                                $(ansInputs[idx]).val(opt);
-                            }
-                        });
-                    }
-                    // تعيين الراديو الصحيح (بعد إعادة الترتيب في add_ask، الخيار الصحيح أصبح في index 0)
-                    // نحتاج إلى إعادة تعيين الراديو حسب البيانات المحفوظة
-                    // لكن add_ask يضع الراديو الأول كـ checked بشكل افتراضي
-                    // لذلك نضبط الراديو الصحيح بناءً على الخيارات
-                    if (q.options && q.options.length > 0) {
-                        // في add_ask، الراديو الأول هو المحدد افتراضياً
-                        // نحتاج إلى معرفة أي خيار كان صحيحاً في البيانات الأصلية
-                        // نبحث عن الخيار الصحيح في البيانات
-                        // بما أننا لا نحفظ correctIndex مباشرة، نستخدم المنطق القديم
-                        // في get_exam_data، يتم ترتيب الخيارات بحيث يكون الخيار الصحيح في index 0
-                        // لذلك كل الخيارات في index 0 هي الصحيحة
-                        // نتحقق إذا كان هناك خيار في index 0
-                        if (q.options[0]) {
-                            // الراديو الأول هو الصحيح (الافتراضي)
-                            // نتركه كما هو
-                        }
-                    }
-                });
-            }
-            go_page('page_newtest');
-            $('#btnAddExam').text('تحديث وحفظ التعديلات');
-        });
 }

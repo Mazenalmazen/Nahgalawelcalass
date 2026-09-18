@@ -7,11 +7,17 @@ function escapeHtml(text) {
     return text.toString().replace(/'/g, "\\'").replace(/"/g, '&quot;');
 }
 
+function getClassNumber(classCode) {
+    if (!classCode) return '';
+    return classCode.replace('CLS-', '');
+}
+
+// ==================== دوال المعلم ====================
 async function readAll_exam_saveded_new(action) {
     var teacher_email = localStorage.getItem('loginEmail');
 
     if (!teacher_email) {
-        $('#exam_saved_te #exam_saved_forAdd').html('<tr><td colspan="3">الرجاء تسجيل الدخول لعرض اختباراتك المنشورة</td></tr>');
+        $('#exam_saved_te #exam_saved_forAdd').html('<div style="text-align:center; padding:30px; color:var(--text-muted);">الرجاء تسجيل الدخول لعرض اختباراتك المنشورة</div>');
         return;
     }
 
@@ -23,32 +29,36 @@ async function readAll_exam_saveded_new(action) {
 
     if (error) {
         console.error('Error fetching exams:', error.message);
-        $('#exam_saved_te #exam_saved_forAdd').html('<tr><td colspan="3">خطأ في جلب الاختبارات من السحابة</td></tr>');
+        $('#exam_saved_te #exam_saved_forAdd').html('<div style="text-align:center; padding:30px; color:var(--danger);">خطأ في جلب الاختبارات من السحابة</div>');
         return;
     }
 
     if (!data || data.length === 0) {
-        $('#exam_saved_te #exam_saved_forAdd').html('<tr><td colspan="3">لم تقم بإنشاء أي اختبار حتى الآن</td></tr>');
+        $('#exam_saved_te #exam_saved_forAdd').html('<div style="text-align:center; padding:30px; color:var(--text-muted);">لم تقم بإنشاء أي اختبار حتى الآن</div>');
         readAll_student_exams_sync([]);
         return;
     }
 
     syncTeacherExamsToStudentStorage(data);
 
-    var html = '';
+    var html = '<div class="classroom-grid" style="max-width:750px; margin:0 auto;">';
     data.forEach(exam => {
-        html += `<tr>
-            <td style="font-weight:800; text-align:right; padding-right:15px;">${exam.exam_name}</td>
-            <td><code style="background:#e2e8f0; padding:3px 8px; border-radius:4px; font-weight:bold;">${exam.exam_number}</code></td>
-            <td>
-                <div style="display:flex; gap:4px; justify-content:center; flex-wrap:wrap;">
-                    <button class="desine-btn" style="padding:5px 8px; font-size:0.75rem; background:#10b981; margin:0;" onclick="viewExamResultsByNum(${exam.exam_number})" title="النتائج"><i class="fas fa-chart-bar"></i> النتائج</button>
-                    <button class="desine-btn" style="padding:5px 8px; font-size:0.75rem; background:#0284c7; margin:0;" onclick="editThisExam(${exam.exam_number})" title="تعديل"><i class="fas fa-edit"></i> تعديل</button>
-                    <button class="desine-btn" style="padding:5px 8px; font-size:0.75rem; background:#ef4444; margin:0;" onclick="deleteThisExamByNum(${exam.exam_number})" title="حذف"><i class="fas fa-trash"></i> حذف</button>
+        html += `
+            <div class="classroom-card" style="text-align:center;">
+                <div class="cls-name" style="font-size:1.2rem; font-weight:900; color:#0f172a; margin-bottom:6px;">${exam.exam_name}</div>
+                <div class="cls-code" style="display:inline-block; background:#eef2ff; color:#4f46e5; padding:4px 18px; border-radius:30px; font-weight:800; font-size:0.9rem; border:1px solid #c7d2fe; letter-spacing:0.5px; margin-bottom:12px;">
+                    رقم الاختبار: ${exam.exam_number} 
+                    <span class="copy-icon" onclick="event.stopPropagation(); copyToClipboard('${exam.exam_number}')" title="نسخ رقم الاختبار">📋 نسخ</span>
                 </div>
-            </td>
-        </tr>`;
+                <div class="cls-actions" style="display:flex; gap:8px; justify-content:center; flex-wrap:wrap;">
+                    <button class="desine-btn" style="background:#10b981; padding:6px 16px; font-size:0.8rem; border-radius:30px; margin:0;" onclick="viewExamResultsByNum(${exam.exam_number})" title="النتائج"><i class="fas fa-chart-bar"></i> النتائج</button>
+                    <button class="desine-btn" style="background:#0284c7; padding:6px 16px; font-size:0.8rem; border-radius:30px; margin:0;" onclick="editThisExam(${exam.exam_number})" title="تعديل"><i class="fas fa-edit"></i> تعديل</button>
+                    <button class="desine-btn" style="background:#ef4444; padding:6px 16px; font-size:0.8rem; border-radius:30px; margin:0;" onclick="deleteThisExamByNum(${exam.exam_number})" title="حذف"><i class="fas fa-trash"></i> حذف</button>
+                </div>
+            </div>
+        `;
     });
+    html += '</div>';
 
     $('#exam_saved_te #exam_saved_forAdd').html(html);
     readAll_student_exams_sync(data);
@@ -71,35 +81,253 @@ function syncTeacherExamsToStudentStorage(teacherExams) {
     localStorage.setItem('downloaded_exams', JSON.stringify(savedExams));
 }
 
+// ==================== عرض الاختبارات المحفوظة كبطاقات ====================
 function readAll_student_exams_sync(teacherExamsData) {
     let savedExams = JSON.parse(localStorage.getItem('downloaded_exams') || '[]');
     
     if (savedExams.length === 0) {
-        $('#exam_saved_st #ans_saved_forAdd').html('<tr><td colspan="3">لم تقم بحفظ أي اختبار للطالب محلياً حتى الآن</td></tr>');
+        $('#exam_loaded_forAdd').html('<div style="text-align:center; padding:20px; color:var(--text-muted); background:#fff; border-radius:12px; border:1.5px dashed var(--border-color);">لم تقم بحفظ أي اختبار محلياً حتى الآن</div>');
         return;
     }
 
-    var html = '';
-    savedExams.forEach(exam => {
-        let studentGrades = JSON.parse(localStorage.getItem('student_grades') || '{}');
-        let myGradeBox = studentGrades[exam.exam_number] 
-            ? `<div style="background:#dcfce7; color:#166534; padding:4px 10px; border-radius:6px; font-weight:bold; display:inline-block; margin-top:4px;">الدرجة: ${studentGrades[exam.exam_number]}</div>` 
-            : `<div style="background:#f1f5f9; color:#64748b; padding:4px 10px; border-radius:6px; font-size:0.85rem; display:inline-block; margin-top:4px;">لم تختبر بعد</div>`;
-
-        html += `<tr>
-            <td style="text-align:right; padding-right:15px;"><b>${exam.exam_name}</b><br>${myGradeBox}</td>
-            <td><code style="background:#e2e8f0; padding:3px 8px; border-radius:4px; font-weight:bold;">${exam.exam_number}</code></td>
-            <td>
-                <div style="display:flex; gap:5px; justify-content:center; flex-wrap:wrap;">
-                    <button class="desine-btn" style="padding:6px 12px; font-size:0.85rem; background:#2563eb; margin:0;" onclick="startDownloadedExam(${exam.exam_number})">
-                        <i class="fas fa-play"></i> فتح الاختبار
-                    </button>
-                </div>
-            </td>
-        </tr>`;
+    let sortedExams = [...savedExams].sort((a, b) => {
+        let grades = JSON.parse(localStorage.getItem('student_grades') || '{}');
+        let aData = grades[a.exam_number];
+        let bData = grades[b.exam_number];
+        
+        let aTested = aData && (Array.isArray(aData) ? aData.length > 0 : true);
+        let bTested = bData && (Array.isArray(bData) ? bData.length > 0 : true);
+        
+        if (aTested && !bTested) return -1;
+        if (!aTested && bTested) return 1;
+        return b.exam_number - a.exam_number;
     });
 
-    $('#exam_saved_st #ans_saved_forAdd').html(html);
+    var html = '<div class="classroom-grid" style="max-width:750px; margin:0 auto;">';
+    
+    sortedExams.forEach(exam => {
+        let studentGrades = JSON.parse(localStorage.getItem('student_grades') || '{}');
+        let gradesData = studentGrades[exam.exam_number];
+        
+        let gradeInfoHtml = '';
+        let isTested = false;
+        let attemptsCount = 0;
+        
+        if (Array.isArray(gradesData) && gradesData.length > 0) {
+            isTested = true;
+            attemptsCount = gradesData.length;
+            
+            let bestAttempt = gradesData.reduce((best, curr) => {
+                let bestPct = (best.total && best.total > 0) ? (best.obtained / best.total) : 0;
+                let currPct = (curr.total && curr.total > 0) ? (curr.obtained / curr.total) : 0;
+                return currPct > bestPct ? curr : best;
+            }, gradesData[0]);
+            
+            gradeInfoHtml = `
+                <div style="background:#dcfce7; color:#166534; padding:6px 12px; border-radius:8px; font-weight:800; display:inline-block; margin-top:8px; font-size:0.9rem;">
+                    <i class="fas fa-trophy"></i> أفضل درجة: ${bestAttempt.grade}
+                </div>
+                <div style="background:#dbeafe; color:#1e40af; padding:4px 10px; border-radius:8px; font-size:0.8rem; display:inline-block; margin-top:6px; margin-right:5px;">
+                    ${attemptsCount} محاولة
+                </div>
+            `;
+        } else if (gradesData && typeof gradesData === 'string') {
+            isTested = true;
+            attemptsCount = 1;
+            gradeInfoHtml = `
+                <div style="background:#dcfce7; color:#166534; padding:6px 12px; border-radius:8px; font-weight:800; display:inline-block; margin-top:8px; font-size:0.9rem;">
+                    <i class="fas fa-check"></i> الدرجة: ${gradesData}
+                </div>
+            `;
+        } else {
+            gradeInfoHtml = `
+                <div style="background:#f1f5f9; color:#64748b; padding:6px 12px; border-radius:8px; font-weight:700; display:inline-block; margin-top:8px; font-size:0.85rem;">
+                    <i class="fas fa-clock"></i> لم تختبر بعد
+                </div>
+            `;
+        }
+
+        let actionButtons = '';
+        if (isTested) {
+            actionButtons = `
+                <button class="desine-btn" style="background:#2563eb; padding:6px 14px; font-size:0.75rem; border-radius:30px; margin:0;" onclick="startDownloadedExam(${exam.exam_number})">
+                    <i class="fas fa-redo"></i> إعادة
+                </button>
+                <button class="desine-btn" style="background:#8b5cf6; padding:6px 14px; font-size:0.75rem; border-radius:30px; margin:0;" onclick="reviewExam(${exam.exam_number})">
+                    <i class="fas fa-eye"></i> مراجعة
+                </button>
+                <button class="desine-btn" style="background:#0284c7; padding:6px 14px; font-size:0.75rem; border-radius:30px; margin:0;" onclick="viewAllAttempts(${exam.exam_number})">
+                    <i class="fas fa-list"></i> المحاولات
+                </button>
+                <button class="desine-btn" style="background:#ef4444; padding:6px 14px; font-size:0.75rem; border-radius:30px; margin:0;" onclick="deleteSavedExam(${exam.exam_number})">
+                    <i class="fas fa-trash"></i> حذف
+                </button>
+            `;
+        } else {
+            actionButtons = `
+                <button class="desine-btn" style="background:#10b981; padding:6px 14px; font-size:0.75rem; border-radius:30px; margin:0;" onclick="startDownloadedExam(${exam.exam_number})">
+                    <i class="fas fa-play"></i> فتح الاختبار
+                </button>
+                <button class="desine-btn" style="background:#ef4444; padding:6px 14px; font-size:0.75rem; border-radius:30px; margin:0;" onclick="deleteSavedExam(${exam.exam_number})">
+                    <i class="fas fa-trash"></i> حذف
+                </button>
+            `;
+        }
+
+        html += `
+            <div class="classroom-card" style="text-align:center;">
+                <div class="cls-name" style="font-size:1.1rem; font-weight:900; color:#0f172a; margin-bottom:6px;">${exam.exam_name}</div>
+                <div class="cls-code" style="display:inline-block; background:#eef2ff; color:#4f46e5; padding:4px 18px; border-radius:30px; font-weight:800; font-size:0.85rem; border:1px solid #c7d2fe; letter-spacing:0.5px;">
+                    رقم الاختبار: ${exam.exam_number}
+                </div>
+                <div style="margin-top:8px;">
+                    ${gradeInfoHtml}
+                </div>
+                <div class="cls-actions" style="display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin-top:14px;">
+                    ${actionButtons}
+                </div>
+            </div>
+        `;
+    });
+    
+    html += '</div>';
+    $('#exam_loaded_forAdd').html(html);
+}
+
+// ==================== تحديث جميع الاختبارات من السحابة ====================
+async function updateAllSavedExamsFromCloud() {
+    let savedExams = JSON.parse(localStorage.getItem('downloaded_exams') || '[]');
+    
+    if (savedExams.length === 0) {
+        alert('لا توجد اختبارات محفوظة للتحديث');
+        return;
+    }
+    
+    if (!confirm('سيتم تحديث ' + savedExams.length + ' اختبار من السحابة.\n(لن تُحذف نتائجك أو محاولاتك السابقة)\n\nهل تريد المتابعة؟')) {
+        return;
+    }
+    
+    $('#load').show();
+    
+    let updatedCount = 0;
+    let failedCount = 0;
+    let failedExams = [];
+    
+    for (let i = 0; i < savedExams.length; i++) {
+        try {
+            let { data, error } = await window._supabase
+                .from('exams')
+                .select('*')
+                .eq('exam_number', Number(savedExams[i].exam_number))
+                .single();
+            
+            if (!error && data) {
+                savedExams[i] = {
+                    ...savedExams[i],
+                    exam_name: data.exam_name,
+                    exam_info: data.exam_info,
+                    zoom_link: data.zoom_link,
+                    exam_data: data.exam_data,
+                    settings: data.settings,
+                    teacher_email: data.teacher_email
+                };
+                updatedCount++;
+            } else {
+                failedCount++;
+                failedExams.push(savedExams[i].exam_number);
+            }
+        } catch (e) {
+            failedCount++;
+            failedExams.push(savedExams[i].exam_number);
+        }
+    }
+    
+    localStorage.setItem('downloaded_exams', JSON.stringify(savedExams));
+    $('#load').hide();
+    
+    let msg = '✅ تم تحديث ' + updatedCount + ' اختبار بنجاح.';
+    if (failedCount > 0) {
+        msg += '\n\n⚠️ فشل تحديث ' + failedCount + ' اختبار:';
+        msg += '\n' + failedExams.join(', ');
+        msg += '\n\n(قد تكون هذه الاختبارات محذوفة من السحابة)';
+    }
+    alert(msg);
+    
+    readAll_student_exams_sync();
+}
+
+// ==================== تحديث جميع الفصول من السحابة ====================
+async function updateAllJoinedClassesFromCloud() {
+    $('#load').show();
+    
+    try {
+        let { data: allClasses, error } = await window._supabase
+            .from('classrooms')
+            .select('*')
+            .order('id', { ascending: false });
+        
+        if (error || !allClasses) {
+            $('#load').hide();
+            alert('❌ تعذر جلب الفصول من السحابة');
+            return;
+        }
+        
+        let studentName = localStorage.getItem('studentName');
+        if (!studentName) {
+            $('#load').hide();
+            alert('⚠️ الرجاء إدخال اسمك أولاً');
+            return;
+        }
+        
+        let { data: myClasses, error: joinError } = await window._supabase
+            .from('classroom_students')
+            .select('class_code')
+            .eq('student_name', studentName);
+        
+        $('#load').hide();
+        
+        if (joinError) {
+            alert('❌ تعذر جلب قائمة انضماماتك');
+            return;
+        }
+        
+        const joinedCodes = myClasses.map(item => item.class_code);
+        const joinedClasses = allClasses.filter(cls => joinedCodes.includes(cls.class_code));
+        
+        renderJoinedClasses(joinedClasses);
+        
+        alert('✅ تم تحديث الفصول من السحابة بنجاح\nعدد الفصول المنضم إليها: ' + joinedClasses.length);
+    } catch (e) {
+        $('#load').hide();
+        alert('❌ حدث خطأ: ' + e.message);
+    }
+}
+
+// ==================== حذف اختبار محفوظ ====================
+function deleteSavedExam(exam_number) {
+    if (!confirm('هل أنت متأكد من حذف هذا الاختبار من قائمتك المحلية؟\n(سيتم حذف نتيجتك وإجاباتك المحلية لهذا الاختبار فقط)')) return;
+    
+    let savedExams = JSON.parse(localStorage.getItem('downloaded_exams') || '[]');
+    savedExams = savedExams.filter(e => e.exam_number != exam_number);
+    localStorage.setItem('downloaded_exams', JSON.stringify(savedExams));
+    
+    let studentGrades = JSON.parse(localStorage.getItem('student_grades') || '{}');
+    delete studentGrades[exam_number];
+    localStorage.setItem('student_grades', JSON.stringify(studentGrades));
+    
+    let studentSubmissions = JSON.parse(localStorage.getItem('student_submissions') || '{}');
+    delete studentSubmissions[exam_number];
+    localStorage.setItem('student_submissions', JSON.stringify(studentSubmissions));
+    
+    let attemptsKey = 'exam_attempt_count_' + exam_number;
+    localStorage.removeItem(attemptsKey);
+    
+    let finishedExams = JSON.parse(localStorage.getItem('finished_exams') || '[]');
+    finishedExams = finishedExams.filter(num => String(num) !== String(exam_number));
+    localStorage.setItem('finished_exams', JSON.stringify(finishedExams));
+    
+    alert('✅ تم حذف الاختبار من قائمتك المحلية بنجاح');
+    readAll_student_exams_sync();
 }
 
 function viewExamResultsByNum(examNum) {
@@ -157,6 +385,13 @@ function editThisExam(examNum) {
                             }
                         });
                     }
+                    if (q.correctIndex !== undefined) {
+                        let radios = currentBox.find('input[type="radio"]');
+                        if (radios[q.correctIndex]) {
+                            radios.prop('checked', false);
+                            $(radios[q.correctIndex]).prop('checked', true);
+                        }
+                    }
                 });
             }
             go_page('page_newtest');
@@ -192,7 +427,6 @@ function startDownloadedExam(exam_number) {
         return;
     }
 
-    // تفعيل قفل الاختبار بكلمة المرور
     if (exam.settings && exam.settings.pass_start_check === true && exam.settings.t_pass_start && exam.settings.t_pass_start.trim() !== '') {
         let enteredPass = prompt('هذا الاختبار محمي بكلمة مرور. الرجاء إدخال كلمة المرور للبدء:');
         if (enteredPass !== exam.settings.t_pass_start) {
@@ -213,6 +447,10 @@ function startDownloadedExam(exam_number) {
             let timeLeft = totalMinutes * 60;
             $('#navTimeTest').removeClass('Dnone');
             
+            let initMins = Math.floor(timeLeft / 60);
+            let initSecs = timeLeft % 60;
+            $('#showTimeHere').text(`${initMins}:${initSecs < 10 ? '0' : ''}${initSecs}`);
+            
             window.examTimerInterval = setInterval(() => {
                 let mins = Math.floor(timeLeft / 60);
                 let secs = timeLeft % 60;
@@ -220,7 +458,10 @@ function startDownloadedExam(exam_number) {
                 
                 if (timeLeft <= 0) {
                     clearInterval(window.examTimerInterval);
-                    alert('انتهى الوقت المحدد للاختبار!');
+                    if (!$('#shows_name').val()) {
+                        $('#shows_name').val('طالب غير محدد');
+                    }
+                    alert('انتهى الوقت المحدد للاختبار! سيتم تسليم إجاباتك تلقائياً.\nالإجابات الفارغة ستُعتبر خاطئة.');
                     get_ans_data();
                 }
                 timeLeft--;
@@ -241,12 +482,11 @@ function startDownloadedExam(exam_number) {
         </div>`;
     }
 
-    var numbers = ['⓵', '⓶', '⓷', '⓸'];
+    var numbers = ['❶', '❷', '❸', '❹'];
     var qHtml = '';
     if (exam.exam_data && exam.exam_data.questions) {
         let allQuestions = [...exam.exam_data.questions];
         
-        // تفعيل بنك الأسئلة (سحب عدد عشوائي لكل طالب)
         if (exam.settings && exam.settings.bank_test_check === true && exam.settings.bank_test) {
             let requiredCount = parseInt(exam.settings.bank_test);
             if (requiredCount > 0 && requiredCount < allQuestions.length) {
@@ -259,15 +499,28 @@ function startDownloadedExam(exam_number) {
             allQuestions.sort(() => Math.random() - 0.5);
         }
 
-        window.currentActiveExamQuestionsList = allQuestions;
-
-        allQuestions.forEach((q, qIndex) => {
-            let optionsList = q.options ? [...q.options] : [];
+        let processedQuestions = allQuestions.map(q => {
+            let qCopy = {
+                question: q.question,
+                options: q.options ? [...q.options] : [],
+                correctIndex: (q.correctIndex !== undefined) ? q.correctIndex : 0
+            };
             
             if (exam.settings && exam.settings.random_answers === true) {
-                optionsList.sort(() => Math.random() - 0.5);
+                let correctAnswerText = qCopy.options[qCopy.correctIndex];
+                qCopy.options = [...qCopy.options].sort(() => Math.random() - 0.5);
+                let newIndex = qCopy.options.indexOf(correctAnswerText);
+                qCopy.correctIndex = newIndex >= 0 ? newIndex : 0;
             }
+            
+            return qCopy;
+        });
 
+        window.currentActiveExamQuestionsList = processedQuestions;
+
+        processedQuestions.forEach((q, qIndex) => {
+            let optionsList = q.options || [];
+            
             qHtml += `<div class="question_box" data-question-index="${qIndex}" style="background:#fff; padding:20px; margin:15px auto; width:95%; border-radius:12px; border:1.5px solid #e2e8f0; text-align:right;">
                 <p style="font-weight:800; color:#1e293b; margin-bottom:5px;">السؤال رقم ${qIndex + 1}</p>
                 <div style="width:100%; min-height:45px; padding:12px 14px; border-radius:8px; border:1.5px solid var(--border-color); background-color:#f8fafc; color:#0f172a; font-weight:750; margin-bottom:15px; white-space:pre-wrap; word-break:break-word;">${q.question || ''}</div>`;
@@ -280,7 +533,7 @@ function startDownloadedExam(exam_number) {
                                 <span style="font-size:1.1rem; margin-left:10px; font-weight:800; color:#4338ca;">${numbers[oIndex] || ''}</span>
                                 <span>${opt}</span>
                             </div>
-                            <input type="radio" name="q_${qIndex}" value="${opt}" style="width:18px; height:18px; cursor:pointer;">
+                            <input type="radio" name="q_${qIndex}" value="${escapeHtml(opt)}" style="width:18px; height:18px; cursor:pointer;">
                         </label>`;
                     }
                 });
@@ -295,112 +548,172 @@ function startDownloadedExam(exam_number) {
     go_page('page_mytest');
 }
 
-// ==================== الفصول الإلكترونية المتقدمة ====================
-function goClassroomsPage() {
-    go_page('page_classrooms');
-    let isTeacher = localStorage.getItem('loginState') === 'login=OK';
+// ===== دالة مساعدة: توحيد بيانات المحاولات (قديمة + جديدة) =====
+function normalizeSubmissionData(data) {
+    if (!data) return null;
     
-    if (isTeacher) {
-        $('#teacher_class_creation_box').removeClass('Dnone').show();
-        $('#student_class_section').hide();
-        loadTeacherClassrooms();
+    // شكل جديد: مصفوفة من كائنات {answers, questions, attempt, date}
+    if (Array.isArray(data)) {
+        if (data.length === 0) return null;
+        let last = data[data.length - 1];
+        if (last && last.answers) {
+            return { 
+                answers: last.answers, 
+                questions: last.questions || null, 
+                isLegacy: !last.questions 
+            };
+        }
+        // شكل قديم جداً: مصفوفة من كائنات الإجابات فقط
+        return { answers: last, questions: null, isLegacy: true };
+    }
+    
+    // شكل قديم: كائن إجابات مباشر {q_0:'x', q_1:'y'}
+    if (typeof data === 'object') {
+        return { answers: data, questions: null, isLegacy: true };
+    }
+    
+    return null;
+}
+
+// ===== مراجعة الاختبار: تدعم الشكل القديم والجديد =====
+function reviewExam(exam_number) {
+    let savedExams = JSON.parse(localStorage.getItem('downloaded_exams') || '[]');
+    let exam = savedExams.find(e => e.exam_number == exam_number);
+    if (!exam) {
+        alert('الاختبار غير موجود محلياً');
+        return;
+    }
+
+    let studentSubmissions = JSON.parse(localStorage.getItem('student_submissions') || '{}');
+    let submissionsData = studentSubmissions[exam_number];
+    
+    let normalized = normalizeSubmissionData(submissionsData);
+    
+    if (!normalized) {
+        alert('لا توجد إجابات مسجلة لهذا الاختبار للمراجعة');
+        return;
+    }
+    
+    let myAnswers = normalized.answers;
+    let activeQuestions;
+
+    if (normalized.questions && normalized.questions.length > 0) {
+        // ✅ الشكل الجديد: الأسئلة النشطة محفوظة مع المحاولة
+        activeQuestions = normalized.questions;
     } else {
-        $('#teacher_class_creation_box').addClass('Dnone').hide();
-        $('#student_class_section').show();
-        loadStudentJoinedClasses();
+        // ⚠️ الشكل القديم: اقتصاص الأسئلة حسب عدد الإجابات المُجابة فعلياً
+        let answerCount = Object.keys(myAnswers).length;
+        let allExamQuestions = (exam.exam_data && exam.exam_data.questions) || [];
+        activeQuestions = allExamQuestions.slice(0, answerCount);
+        
+        if (answerCount > 0) {
+            console.info('ملاحظة: هذه محاولة قديمة، تم اقتصاص الأسئلة إلى ' + answerCount + ' سؤال.');
+        }
+    }
+
+    let studentGrades = JSON.parse(localStorage.getItem('student_grades') || '{}');
+    let gradesData = studentGrades[exam_number];
+    let gradeText = '0 / 0';
+    
+    if (Array.isArray(gradesData) && gradesData.length > 0) {
+        gradeText = gradesData[gradesData.length - 1].grade;
+    } else if (typeof gradesData === 'string') {
+        gradeText = gradesData;
+    }
+
+    if (typeof openStudentFullReviewAfterSubmit === 'function') {
+        openStudentFullReviewAfterSubmit(gradeText, exam_number, myAnswers, activeQuestions);
     }
 }
 
-async function createNewClassroom() {
-    var className = $('#cls_name').val();
-    var teacherEmail = localStorage.getItem('loginEmail');
-
-    if (!className) {
-        alert('الرجاء إدخال اسم الفصل الدراسي');
+// ===== سجل المحاولات: يدعم الشكل القديم والجديد =====
+function viewAllAttempts(exam_number) {
+    let studentGrades = JSON.parse(localStorage.getItem('student_grades') || '{}');
+    let gradesData = studentGrades[exam_number];
+    
+    // تحويل الشكل القديم (نص واحد) إلى مصفوفة
+    if (gradesData && typeof gradesData === 'string') {
+        gradesData = [{
+            grade: gradesData,
+            obtained: 0,
+            total: 0,
+            date: null,
+            attempt: 1
+        }];
+    }
+    
+    if (!Array.isArray(gradesData) || gradesData.length === 0) {
+        alert('لا توجد محاولات مسجلة لهذا الاختبار');
         return;
     }
-    if (!teacherEmail) {
-        alert('الرجاء تسجيل الدخول أولاً');
-        return;
-    }
-
-    var classCode = 'CLS-' + Math.floor(1000 + Math.random() * 9000);
-
-    $('#load').show();
-    let { data, error } = await window._supabase
-        .from('classrooms')
-        .insert([
-            {
-                teacher_email: String(teacherEmail),
-                class_name: String(className),
-                class_code: String(classCode)
-            }
-        ]);
-    $('#load').hide();
-
-    if (error) {
-        alert('خطأ أثناء إنشاء الفصل: ' + error.message);
-    } else {
-        alert('تم إنشاء الفصل بنجاح! رمز الانضمام هو: ' + classCode);
-        $('#cls_name').val('');
-        loadTeacherClassrooms();
-    }
-}
-
-// دالة مساعدة لاستخراج الرقم من رمز الفصل
-function getClassNumber(classCode) {
-    if (!classCode) return '';
-    return classCode.replace('CLS-', '');
-}
-
-async function loadTeacherClassrooms() {
-    var rawEmail = localStorage.getItem('loginEmail');
-    if (!rawEmail) return;
-    var teacherEmail = rawEmail.trim().toLowerCase();
-
-    let { data, error } = await window._supabase
-        .from('classrooms')
-        .select('*')
-        .ilike('teacher_email', teacherEmail)
-        .order('id', { ascending: false });
-
-    if (error) {
-        console.error('Error fetching classrooms:', error);
-        $('#classrooms_list_add').html('<tr><td colspan="3">خطأ في جلب الفصول: ' + error.message + '</td></tr>');
-        return;
-    }
-
-    if (!data || data.length === 0) {
-        $('#classrooms_list_add').html('<tr><td colspan="3">لا توجد فصول مضافة حتى الآن</td></tr>');
-        return;
-    }
-
-    var html = '';
-    data.forEach(cls => {
-        var classNum = getClassNumber(cls.class_code);
+    
+    let sortedAttempts = [...gradesData].sort((a, b) => (a.attempt || 0) - (b.attempt || 0));
+    
+    let html = `<div id="attempts_modal" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:99999;display:flex;align-items:center;justify-content:center;">
+        <div style="background:#fff;padding:25px;border-radius:16px;width:92%;max-width:550px;max-height:85vh;overflow-y:auto;text-align:right;box-shadow:0 25px 50px rgba(0,0,0,0.3);">
+            <h3 style="color:var(--primary);text-align:center;margin-top:0;"><i class="fas fa-history"></i> سجل المحاولات</h3>
+            <p style="color:#64748b;text-align:center;font-size:0.9rem;">عدد المحاولات: ${sortedAttempts.length}</p>
+            <hr>
+            <table style="width:100%;border:none;box-shadow:none;margin:0;">
+                <thead>
+                    <tr>
+                        <th style="background:#f1f5f9;padding:8px;font-size:0.85rem;">المحاولة</th>
+                        <th style="background:#f1f5f9;padding:8px;font-size:0.85rem;">الدرجة</th>
+                        <th style="background:#f1f5f9;padding:8px;font-size:0.85rem;">التاريخ</th>
+                    </tr>
+                </thead>
+                <tbody>`;
+    
+    let bestPct = -1;
+    sortedAttempts.forEach(a => {
+        let pct = (a.total && a.total > 0) ? (a.obtained / a.total) : 0;
+        if (pct > bestPct) bestPct = pct;
+    });
+    
+    sortedAttempts.forEach((attempt, idx) => {
+        let dateStr = (attempt.date && typeof attempt.date === 'string') 
+            ? new Date(attempt.date).toLocaleString('ar-SA') 
+            : 'محاولة قديمة';
+        let attemptNum = attempt.attempt || (idx + 1);
+        let thisPct = (attempt.total && attempt.total > 0) ? (attempt.obtained / attempt.total) : 0;
+        let isBest = (attempt.total > 0) && (thisPct === bestPct);
+        
         html += `<tr>
-            <td style="font-weight:800; text-align:right; padding-right:15px;">${cls.class_name}</td>
-            <td><code style="background:#dbeafe; color:#1e40af; padding:3px 8px; border-radius:4px; font-weight:bold;">${classNum}</code></td>
-            <td>
-                <div style="display:flex; gap:4px; justify-content:center;">
-                    <button class="desine-btn" style="padding:5px 8px; font-size:0.75rem; background:#2563eb; margin:0;" onclick="manageSingleClassroom('${cls.class_code}', '${escapeHtml(cls.class_name)}')"><i class="fas fa-folder-open"></i> إدارة</button>
-                    <button class="desine-btn" style="padding:5px 8px; font-size:0.75rem; background:#0284c7; margin:0;" onclick="manageClassroom('${cls.class_code}', '${escapeHtml(cls.class_name)}')"><i class="fas fa-users"></i> الطلاب</button>
-                    <button class="desine-btn" style="padding:5px 8px; font-size:0.75rem; background:#ef4444; margin:0;" onclick="deleteClassroom(${cls.id})"><i class="fas fa-trash"></i></button>
-                </div>
-            </td>
+            <td style="padding:8px;text-align:center;">${isBest ? '🏆 ' : ''}${attemptNum}</td>
+            <td style="padding:8px;text-align:center;"><b style="color:#0284c7;">${attempt.grade}</b></td>
+            <td style="padding:8px;text-align:center;font-size:0.8rem;color:#64748b;">${dateStr}</td>
         </tr>`;
     });
+    
+    html += `</tbody></table>
+            <br>
+            <button class="desine-btn" style="width:100%;background:#64748b;padding:12px;margin-top:15px;" onclick="$('#attempts_modal').remove()">إغلاق</button>
+        </div>
+    </div>`;
+    
+    $('#attempts_modal').remove();
+    $('body').append(html);
+}
 
-    $('#classrooms_list_add').html(html);
+// ==================== الفصول الإلكترونية (نسخة المستخدم) ====================
+function goClassroomsPage() {
+    go_page('page_classrooms');
+    $('#teacher_class_creation_box').addClass('Dnone').hide();
+    $('#student_class_section').show();
+    loadStudentJoinedClasses();
 }
 
 async function studentJoinClassroom() {
     var stdName = $('#student_join_name').val();
-    var clsCode = 'CLS-' + $('#student_join_code').val().trim();
+    var clsCode = $('#student_join_code').val().trim();
 
-    if (!stdName || !$('#student_join_code').val().trim()) {
+    if (!stdName || !clsCode) {
         alert('الرجاء إدخال اسمك ورمز الانضمام للفصل');
         return;
+    }
+
+    if (!clsCode.startsWith('CLS-')) {
+        clsCode = 'CLS-' + clsCode;
     }
 
     let { data: clsData, error: clsErr } = await window._supabase
@@ -434,52 +747,142 @@ async function studentJoinClassroom() {
     } else {
         alert('تم الانضمام إلى الفصل بنجاح: ' + clsData.class_name);
         $('#student_join_code').val('');
+        $('#student_join_name').val('');
         manageSingleClassroom(clsData.class_code, clsData.class_name);
     }
 }
 
+async function insideJoinClassroom() {
+    var stdName = $('#inside_join_name').val();
+    var clsCode = window.currentManagingClassCode;
+
+    if (!stdName) {
+        alert('الرجاء إدخال اسمك');
+        return;
+    }
+
+    let { data: clsData, error: clsErr } = await window._supabase
+        .from('classrooms')
+        .select('*')
+        .eq('class_code', clsCode)
+        .single();
+
+    if (clsErr || !clsData) {
+        alert('رمز الفصل غير صحيح أو غير موجود.');
+        return;
+    }
+
+    let { data: existing } = await window._supabase
+        .from('classroom_students')
+        .select('*')
+        .eq('class_code', clsCode)
+        .eq('student_name', stdName)
+        .maybeSingle();
+
+    if (existing) {
+        alert('أنت منضم بالفعل إلى هذا الفصل.');
+        return;
+    }
+
+    $('#load').show();
+    let { error } = await window._supabase
+        .from('classroom_students')
+        .insert([
+            {
+                class_code: clsCode,
+                student_name: stdName
+            }
+        ]);
+    $('#load').hide();
+
+    if (error) {
+        alert('خطأ أثناء الانضمام: ' + error.message);
+    } else {
+        alert('تم الانضمام إلى الفصل بنجاح!');
+        $('#inside_join_name').val('');
+        $('#inside_join_section').hide();
+        loadSingleClassroomStudents(clsCode);
+    }
+}
+
 async function loadStudentJoinedClasses() {
-    let { data, error } = await window._supabase
+    let { data: allClasses, error } = await window._supabase
         .from('classrooms')
         .select('*')
         .order('id', { ascending: false });
 
-    if (error || !data || data.length === 0) {
-        $('#classrooms_list_add').html('<tr><td colspan="3">لا توجد فصول متاحة حالياً</td></tr>');
+    if (error) {
+        $('#classrooms_list_add').html('<div style="text-align:center; padding:20px; color:var(--danger);">خطأ في جلب الفصول</div>');
         return;
     }
 
-    var html = '';
-    data.forEach(cls => {
-        var classNum = getClassNumber(cls.class_code);
-        html += `<tr>
-            <td style="font-weight:800; text-align:right; padding-right:15px;">${cls.class_name}</td>
-            <td><code style="background:#dbeafe; color:#1e40af; padding:3px 8px; border-radius:4px; font-weight:bold;">${classNum}</code></td>
-            <td>
-                <button class="desine-btn" style="padding:5px 12px; font-size:0.8rem; background:#10b981; margin:0;" onclick="manageSingleClassroom('${cls.class_code}', '${escapeHtml(cls.class_name)}')"><i class="fas fa-door-open"></i> فتح الفصل</button>
-            </td>
-        </tr>`;
-    });
+    if (!allClasses || allClasses.length === 0) {
+        $('#classrooms_list_add').html('<div style="text-align:center; padding:20px; color:var(--text-muted);">لا توجد فصول متاحة حالياً</div>');
+        return;
+    }
 
+    var studentName = localStorage.getItem('studentName');
+    if (!studentName) {
+        studentName = prompt('الرجاء إدخال اسمك الثلاثي لعرض الفصول التي انضممت إليها:');
+        if (studentName) {
+            localStorage.setItem('studentName', studentName);
+        } else {
+            $('#classrooms_list_add').html('<div style="text-align:center; padding:20px; color:var(--text-muted);">الرجاء إدخال اسمك لعرض الفصول.</div>');
+            return;
+        }
+    }
+
+    let { data: myClasses, error: joinError } = await window._supabase
+        .from('classroom_students')
+        .select('class_code')
+        .eq('student_name', studentName);
+
+    if (joinError) {
+        $('#classrooms_list_add').html('<div style="text-align:center; padding:20px; color:var(--danger);">خطأ في جلب انضماماتك</div>');
+        return;
+    }
+
+    const joinedCodes = myClasses.map(item => item.class_code);
+    const joinedClasses = allClasses.filter(cls => joinedCodes.includes(cls.class_code));
+
+    renderJoinedClasses(joinedClasses);
+}
+
+function renderJoinedClasses(joinedClasses) {
+    if (!joinedClasses || joinedClasses.length === 0) {
+        $('#classrooms_list_add').html('<div style="text-align:center; padding:20px; color:var(--text-muted);">لم تنضم إلى أي فصل دراسي حتى الآن. استخدم صندوق الانضمام أعلاه.</div>');
+        return;
+    }
+
+    var html = '<div class="classroom-grid">';
+    joinedClasses.forEach(cls => {
+        var classNum = getClassNumber(cls.class_code);
+        html += `
+            <div class="classroom-card">
+                <div class="cls-name">${cls.class_name}</div>
+                <div class="cls-code">رمز الانضمام: ${classNum} 
+                    <span class="copy-icon" onclick="event.stopPropagation(); copyToClipboard('${classNum}')" title="نسخ رمز الفصل">📋 نسخ</span>
+                </div>
+                <div class="cls-actions">
+                    <button class="desine-btn" style="background:#10b981; padding:6px 14px; font-size:0.75rem;" onclick="manageSingleClassroom('${cls.class_code}', '${escapeHtml(cls.class_name)}')"><i class="fas fa-door-open"></i> فتح الفصل</button>
+                </div>
+            </div>
+        `;
+    });
+    html += '</div>';
     $('#classrooms_list_add').html(html);
 }
 
 async function manageSingleClassroom(code, name) {
     go_page('page_classroom_single');
-    $('#single_cls_title').text('إدارة فصل: ' + name);
+    $('#single_cls_title').text('فصل: ' + name);
     $('#single_cls_code').text(code);
     window.currentManagingClassCode = code;
 
-    let isTeacher = (localStorage.getItem('loginState') === 'login=OK');
-    if (isTeacher) {
-        $('#teacher_add_exam_to_cls_box').show();
-        $('#teacher_add_content_box').show();
-        $('#students_section_container').show(); // إظهار قسم الطلاب للمعلم
-    } else {
-        $('#teacher_add_exam_to_cls_box').hide();
-        $('#teacher_add_content_box').hide();
-        $('#students_section_container').hide(); // إخفاء قسم الطلاب عن الطالب
-    }
+    $('#teacher_add_exam_to_cls_box').addClass('Dnone').hide();
+    $('#teacher_add_content_box').addClass('Dnone').hide();
+
+    $('#inside_join_section').show();
 
     loadSingleClassroomExams(code);
     loadSingleClassroomContents(code);
@@ -487,100 +890,39 @@ async function manageSingleClassroom(code, name) {
 }
 
 async function loadSingleClassroomExams(code) {
-    $('#single_cls_exams_container').html('جاري تحميل الاختبارات...');
+    $('#single_cls_exams_container').html('<div style="text-align:center; padding:20px; color:#64748b;">جاري تحميل الاختبارات...</div>');
     let { data, error } = await window._supabase
         .from('classroom_exams')
         .select('*')
         .eq('class_code', code);
 
     if (error || !data || data.length === 0) {
-        $('#single_cls_exams_container').html('<p style="color:#64748b;">لا توجد اختبارات مرتبطة بهذا الفصل.</p>');
+        $('#single_cls_exams_container').html('<div style="text-align:center; padding:20px; color:#64748b; background:#f8fafc; border-radius:12px; border:1px dashed #cbd5e1;">لا توجد اختبارات مرتبطة بهذا الفصل.</div>');
         return;
     }
 
-    let html = '<ul style="list-style:none; padding:0; text-align:right; display:flex; flex-direction:column; gap:12px;">';
+    let html = '<div style="max-width:700px; margin:0 auto;">';
     data.forEach(ex => {
-        html += `<li style="background:#ffffff; border:1.5px solid #e2e8f0; padding:0; margin:0; border-radius:14px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.06); transition:all 0.2s ease;">
-            
-            <!-- الجزء العلوي: معلومات الاختبار -->
-            <div style="padding:16px 18px 12px 18px; background:linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); border-bottom:1px solid #e2e8f0;">
-                
-                <!-- عنوان الاختبار -->
-                <h5 style="margin:0 0 10px 0; color:#1e293b; font-size:1rem; font-weight:800; line-height:1.5; word-break:break-word; overflow-wrap:break-word; text-align:right;">
-                    <i class="fas fa-file-alt" style="color:#3b82f6; margin-left:8px;"></i>${ex.exam_name}
-                </h5>
-                
-                <!-- رقم الاختبار -->
-                <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-                    <span style="color:#64748b; font-size:0.8rem; font-weight:600;">رقم الاختبار:</span>
-                    <code style="background:#dbeafe; color:#1e40af; padding:4px 12px; border-radius:6px; font-size:0.85rem; font-weight:800; letter-spacing:0.5px; border:1px solid #bfdbfe;">${ex.exam_number}</code>
+        html += `
+            <div class="exam-card-item">
+                <div class="exam-info">
+                    <div class="exam-name"><i class="fas fa-file-alt" style="color:#3b82f6; margin-left:8px;"></i>${ex.exam_name}</div>
+                    <div class="exam-number">رقم الاختبار: ${ex.exam_number} 
+                        <span class="copy-icon" onclick="event.stopPropagation(); copyToClipboard('${ex.exam_number}')" title="نسخ رقم الاختبار">📋 نسخ</span>
+                    </div>
                 </div>
-                
+                <div class="exam-actions">
+                    <button class="desine-btn" style="background:linear-gradient(135deg, #2563eb, #1d4ed8); padding:8px 16px; font-size:0.8rem; box-shadow:0 4px 12px rgba(37,99,235,0.3);" onclick="searchAndStartExamByNum(${ex.exam_number})">
+                        <i class="fas fa-play-circle"></i> فتح الاختبار
+                    </button>
+                </div>
             </div>
-            
-            <!-- الجزء السفلي: زر الفتح -->
-            <div style="padding:14px 18px; background:#ffffff; display:flex; justify-content:flex-end; align-items:center;">
-                <button class="desine-btn" style="padding:12px 24px; font-size:0.9rem; background:linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); margin:0; border-radius:10px; min-width:140px; text-align:center; font-weight:800; border:none; box-shadow:0 4px 12px rgba(37,99,235,0.3); color:#fff; cursor:pointer; transition:all 0.2s ease;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 16px rgba(37,99,235,0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(37,99,235,0.3)'" onclick="searchAndStartExamByNum(${ex.exam_number})">
-                    <i class="fas fa-play-circle" style="margin-left:6px;"></i> فتح الاختبار
-                </button>
-            </div>
-            
-        </li>`;
+        `;
     });
-    html += '</ul>';
+    html += '</div>';
     $('#single_cls_exams_container').html(html);
 }
 
-async function publishExamToSingleClass() {
-    let examNum = $('#single_link_exam_num').val();
-    let code = window.currentManagingClassCode;
-
-    if (!examNum) {
-        alert('الرجاء إدخال رقم الاختبار');
-        return;
-    }
-
-    let { data: examData, error: examErr } = await window._supabase
-        .from('exams')
-        .select('*')
-        .eq('exam_number', Number(examNum))
-        .single();
-
-    if (examErr || !examData) {
-        alert('رقم الاختبار غير موجود في السحابة.');
-        return;
-    }
-
-    let { error } = await window._supabase
-        .from('classroom_exams')
-        .insert([
-            {
-                class_code: code,
-                exam_number: Number(examNum),
-                exam_name: String(examData.exam_name)
-            }
-        ]);
-
-    if (error) {
-        if (error.code === '23505') {
-            alert('هذا الاختبار منشور مسبقاً في هذا الفصل.');
-        } else {
-            alert('خطأ أثناء ربط الاختبار: ' + error.message);
-        }
-    } else {
-        alert('تم نشر الاختبار في الفصل بنجاح!');
-        $('#single_link_exam_num').val('');
-        loadSingleClassroomExams(code);
-    }
-}
-
-async function removeExamFromClass(relId, code) {
-    if (!confirm('هل تريد إزالة هذا الاختبار من الفصل؟')) return;
-    let { error } = await window._supabase.from('classroom_exams').delete().eq('id', relId);
-    if (!error) loadSingleClassroomExams(code);
-}
-
-// ===== دالة عرض المحتوى (تم تعديل التنسيق فقط) =====
 async function loadSingleClassroomContents(code) {
     let { data } = await window._supabase
         .from('classroom_contents')
@@ -594,7 +936,6 @@ async function loadSingleClassroomContents(code) {
     }
 
     let html = '<div style="display:flex; flex-direction:column; gap:16px;">';
-
     data.forEach(item => {
         let badgeColor = item.content_type === 'homework' ? '#dc2626' : item.content_type === 'link' ? '#0284c7' : '#4338ca';
         let badgeName = item.content_type === 'homework' ? '📝 واجب دراسي' : item.content_type === 'link' ? '🔗 رابط خارجي' : '📢 إعلان وشرح';
@@ -604,7 +945,7 @@ async function loadSingleClassroomContents(code) {
         if (item.body && (item.body.startsWith('http://') || item.body.startsWith('https://'))) {
             bodyContent = `
                 <div style="margin-top:12px; text-align:center;">
-                    <a href="${item.body}" target="_blank" class="desine-btn" style="background:#0284c7; display:inline-block; padding:10px 35px; text-decoration:none; border-radius:10px; font-weight:800; font-size:0.95rem; box-shadow:0 4px 12px rgba(2,132,199,0.3); transition:0.2s;">
+                    <a href="${item.body}" target="_blank" class="desine-btn" style="background:#0284c7; display:inline-block; padding:10px 35px; text-decoration:none; border-radius:10px; font-weight:800; font-size:0.95rem; box-shadow:0 4px 12px rgba(2,132,199,0.3);">
                         <i class="fas fa-external-link-alt"></i>  فتح في المتصفح
                     </a>
                 </div>
@@ -614,18 +955,12 @@ async function loadSingleClassroomContents(code) {
         }
 
         html += `
-            <div style="background:#ffffff; border-radius:14px; border:1.5px solid #e2e8f0; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.04); transition:all 0.2s ease;">
-                
-                <!-- رأس البطاقة: نوع المحتوى -->
+            <div style="background:#ffffff; border-radius:14px; border:1.5px solid #e2e8f0; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.04);">
                 <div style="display:flex; justify-content:space-between; align-items:center; padding:12px 20px; background:linear-gradient(135deg, ${badgeColor}15 0%, ${badgeColor}08 100%); border-bottom:1px solid #e2e8f0;">
-                    <div style="display:flex; align-items:center; gap:8px;">
-                        <span style="background:${badgeColor}; color:#fff; padding:4px 14px; border-radius:20px; font-size:0.75rem; font-weight:800; letter-spacing:0.3px;">
-                            <i class="fas ${icon}"></i> ${badgeName}
-                        </span>
-                    </div>
+                    <span style="background:${badgeColor}; color:#fff; padding:4px 14px; border-radius:20px; font-size:0.75rem; font-weight:800;">
+                        <i class="fas ${icon}"></i> ${badgeName}
+                    </span>
                 </div>
-                
-                <!-- جسم البطاقة: العنوان + المحتوى -->
                 <div style="padding:16px 20px 20px 20px;">
                     <h5 style="margin:0 0 6px 0; color:#1e293b; font-size:1.05rem; font-weight:800; text-align:right;">
                         <i class="fas fa-tag" style="color:#64748b; margin-left:8px; font-size:0.85rem;"></i>
@@ -633,56 +968,54 @@ async function loadSingleClassroomContents(code) {
                     </h5>
                     ${bodyContent}
                 </div>
-                
             </div>
         `;
     });
-
     html += '</div>';
     $('#single_cls_content_container').html(html);
 }
 
-async function publishContentToClass() {
-    let title = $('#cls_content_title').val();
-    let body = $('#cls_content_body').val();
-    let code = window.currentManagingClassCode;
-
-    if (!title || !body) {
-        alert('الرجاء إدخال عنوان ومحتوى الإعلان أو الواجب');
-        return;
-    }
-
-    let { error } = await window._supabase
-        .from('classroom_contents')
-        .insert([{ class_code: code, title: title, body: body }]);
-
-    if (error) {
-        alert('خطأ أثناء النشر: ' + error.message);
-    } else {
-        alert('تم نشر المحتوى بنجاح لجميع طلاب الفصل!');
-        $('#cls_content_title').val('');
-        $('#cls_content_body').val('');
-        loadSingleClassroomContents(code);
-    }
-}
-
 async function loadSingleClassroomStudents(code) {
-    let { data } = await window._supabase
-        .from('classroom_students')
-        .select('*')
-        .eq('class_code', code);
-
-    if (!data || data.length === 0) {
-        $('#single_cls_students_list').html('<p style="color:#64748b; margin:0;">لا يوجد طلاب منضمين حتى الآن.</p>');
+    let currentUser = localStorage.getItem('loginEmail') || '';
+    let isTeacher = localStorage.getItem('loginState') === 'login=OK';
+    
+    let { data: clsData, error: clsErr } = await window._supabase
+        .from('classrooms')
+        .select('teacher_email')
+        .eq('class_code', code)
+        .single();
+    
+    if (clsErr) {
+        $('#single_cls_students_list').html('<p style="color:#64748b; margin:0;">خطأ في تحميل بيانات الفصل</p>');
         return;
     }
+    
+    let isOwner = isTeacher && clsData && clsData.teacher_email.toLowerCase() === currentUser.trim().toLowerCase();
+    
+    if (!isOwner) {
+        $('#single_cls_students_list').html('<p style="color:#64748b; margin:0; text-align:center;">عدد الطلاب المنضمين: (غير مرئي للمستخدم العادي)</p>');
+        return;
+    }
+    
+    try {
+        let { data } = await window._supabase
+            .from('classroom_students')
+            .select('*')
+            .eq('class_code', code);
 
-    let html = '<ul style="margin:0; padding-right:20px; text-align:right;">';
-    data.forEach((s, idx) => {
-        html += `<li><b>${idx + 1}. ${s.student_name}</b></li>`;
-    });
-    html += '</ul>';
-    $('#single_cls_students_list').html(html);
+        if (!data || data.length === 0) {
+            $('#single_cls_students_list').html('<p style="color:#64748b; margin:0;">لا يوجد طلاب منضمون حتى الآن.</p>');
+        } else {
+            let html = '<ul style="margin:0; padding-right:20px; text-align:right; list-style:none;">';
+            data.forEach((s, idx) => {
+                html += `<li style="padding:6px 0; border-bottom:1px solid #e2e8f0;"><b>${idx + 1}. ${s.student_name}</b></li>`;
+            });
+            html += '</ul>';
+            $('#single_cls_students_list').html(html);
+        }
+    } catch (e) {
+        $('#single_cls_students_list').html('<p style="color:#64748b; margin:0;">لا يمكن تحميل الطلاب حالياً (غير متصل).</p>');
+    }
 }
 
 async function searchAndStartExamByNum(examNum) {
@@ -703,20 +1036,26 @@ async function searchAndStartExamByNum(examNum) {
     downloadExam_new();
 }
 
-async function deleteClassroom(clsId) {
-    if (!confirm('هل أنت متأكد من حذف هذا الفصل الدراسي؟')) return;
-
-    let { error } = await window._supabase
-        .from('classrooms')
-        .delete()
-        .eq('id', clsId);
-
-    if (error) {
-        alert('خطأ أثناء الحذف: ' + error.message);
+function copyToClipboard(text) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(() => {
+            alert('✅ تم نسخ: ' + text);
+        }).catch(() => {
+            fallbackCopyText(text);
+        });
     } else {
-        alert('تم حذف الفصل بنجاح');
-        loadTeacherClassrooms();
+        fallbackCopyText(text);
     }
+}
+
+function fallbackCopyText(text) {
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    document.body.appendChild(textarea);
+    textarea.select();
+    document.execCommand('copy');
+    document.body.removeChild(textarea);
+    alert('✅ تم نسخ: ' + text);
 }
 
 function teacherLogout() {
@@ -740,7 +1079,7 @@ $(document).ready(function() {
     if (localStorage.getItem('loginState') === 'login=OK') {
         window.loginState = 'login=OK';
         window.loginEmail = localStorage.getItem('loginEmail');
-        $('#loginEmail').text('مرحباً بك: ' + window.loginEmail);
+        $('#loginEmail').text('مرحبًا بك: ' + window.loginEmail);
         $('#logout_btn').show();
         readAll_exam_saveded_new();
     } else {

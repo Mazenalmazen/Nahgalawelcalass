@@ -216,6 +216,7 @@ thead, th {
     border-left: 1px solid rgba(255, 255, 255, 0.08);
     color: #94a3b8;
     transition: 0.2s;
+    width: 25% !important; /* تقسيم متساوي */
 }
 
 #nav-bottom table tr td:last-child {
@@ -258,6 +259,7 @@ thead, th {
     box-shadow: 0 1px 3px rgba(0,0,0,0.02);
     cursor: pointer;
     transition: 0.2s;
+    font-size: 0.95rem !important;
 }
 
 .sett:hover {
@@ -299,7 +301,6 @@ hr {
     font-weight: 750 !important;
 }
 
-/* ===== تنسيق أزرار التعديل والحذف في الأسئلة ===== */
 .question_box .btn-edit {
     background: #0284c7;
     color: #fff;
@@ -338,7 +339,6 @@ hr {
     background: #dc2626;
 }
 
-/* ===== نافذة تعديل السؤال ===== */
 #editQuestionModal textarea,
 #editQuestionModal input {
     font-family: 'Cairo', 'Tajawal', sans-serif !important;
@@ -349,14 +349,12 @@ hr {
     background: transparent !important;
 }
 
-/* تأثير انزلاقي عند حذف سؤال */
 .question_box.deleting {
     opacity: 0;
     transform: translateX(-30px);
     transition: all 0.4s ease;
 }
 
-/* ===== تنسيق بطاقات المحتوى في الفصل ===== */
 #single_cls_content_container > div {
     transition: all 0.2s ease;
 }
@@ -375,17 +373,14 @@ hr {
     box-shadow: 0 6px 16px rgba(2,132,199,0.4) !important;
 }
 
-/* تحسين شكل النص في المحتوى */
 #single_cls_content_container p {
     font-family: 'Cairo', 'Tajawal', sans-serif;
 }
 
-/* تنسيق خاص للروابط */
 #single_cls_content_container a.desine-btn {
     text-decoration: none;
 }
 
-/* تنسيق الحذف الصغير للمحتوى */
 #single_cls_content_container .desine-btn[onclick*="deleteContent"] {
     background: #ef4444 !important;
 }
@@ -394,7 +389,379 @@ hr {
     background: #dc2626 !important;
 }
 
-/* تنسيق رسالة عدم وجود محتوى */
 #single_cls_content_container p[style*="color:#64748b"] {
     font-weight: 600 !important;
+}
+
+#form_new_ask *,
+#add_ask_here * {
+    font-family: 'Tahoma', 'Arial', 'Noto Sans Arabic', sans-serif !important;
+    font-weight: 700 !important;
+    font-size: 1.1rem !important;
+}
+
+#form_new_ask .btn-edit,
+#form_new_ask .btn-delete,
+#form_new_ask .desine-btn,
+#add_ask_here .btn-edit,
+#add_ask_here .btn-delete,
+#add_ask_here .desine-btn {
+    font-family: 'Cairo', 'Tajawal', sans-serif !important;
+    font-weight: 800 !important;
+    font-size: 0.95rem !important;
+}
+
+.question_box {
+    background: #f0f7ff !important;
+    border-radius: 16px !important;
+    padding: 20px 18px !important;
+    margin-bottom: 20px !important;
+    border: 1.5px solid #dbeafe !important;
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.08) !important;
+    transition: all 0.2s ease;
+}
+
+.question_box:hover {
+    box-shadow: 0 6px 20px rgba(79, 70, 229, 0.15) !important;
+    border-color: #bfdbfe !important;
+}
+
+.question_box .inputAskAuto,
+.question_box .desine-input-text,
+.question_box .inputMyApp {
+    background: #ffffff !important;
+    border-color: #d1d5db !important;
+}
+
+.question_box .inputAskAuto:focus,
+.question_box .desine-input-text:focus,
+.question_box .inputMyApp:focus {
+    border-color: var(--primary) !important;
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15) !important;
+}
+
+.classroom-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+    padding: 15px 5px;
+    max-width: 750px;
+    margin: 0 auto;
+}
+.classroom-card {
+    background: #ffffff;
+    border-radius: 18px;
+    border: 1.5px solid var(--border-color);
+    padding: 20px 18px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.04);
+    transition: all 0.25s ease;
+    text-align: center !important;
+    position: relative;
+    overflow: hidden;
+}
+.classroom-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, #4f46e5, #7c3aed, #2563eb);
+}
+.classroom-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 12px 36px rgba(79, 70, 229, 0.12);
+    border-color: #a5b4fc;
+}
+.classroom-card .cls-name {
+    font-size: 1.15rem;
+    font-weight: 900;
+    color: #0f172a;
+    margin: 8px 0 6px 0;
+    font-family: 'Cairo', 'Tajawal', sans-serif !important;
+    text-align: center !important;
+}
+.classroom-card .cls-code {
+    display: inline-block;
+    background: #eef2ff;
+    color: #4f46e5;
+    padding: 4px 14px;
+    border-radius: 30px;
+    font-weight: 800;
+    font-size: 0.85rem;
+    border: 1px solid #c7d2fe;
+    letter-spacing: 0.5px;
+    margin: 4px auto;
+}
+.classroom-card .cls-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 14px;
+    justify-content: center !important;
+    flex-wrap: wrap;
+}
+.classroom-card .cls-actions .desine-btn {
+    margin: 0;
+    padding: 6px 16px;
+    font-size: 0.8rem;
+    border-radius: 30px;
+}
+
+.exam-card-item {
+    background: #ffffff;
+    border-radius: 16px;
+    border: 1.5px solid #e2e8f0;
+    padding: 16px 20px;
+    margin-bottom: 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    transition: 0.2s;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+}
+.exam-card-item:hover {
+    border-color: #a5b4fc;
+    box-shadow: 0 4px 16px rgba(79, 70, 229, 0.06);
+}
+.exam-card-item .exam-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+.exam-card-item .exam-name {
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: #1e293b;
+    font-family: 'Cairo', 'Tajawal', sans-serif !important;
+}
+.exam-card-item .exam-number {
+    background: #f1f5f9;
+    padding: 2px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #475569;
+    display: inline-block;
+}
+.exam-card-item .exam-actions {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+.exam-card-item .exam-actions .desine-btn {
+    margin: 0;
+    padding: 6px 14px;
+    font-size: 0.75rem;
+    border-radius: 30px;
+}
+
+.results-header {
+    background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
+    padding: 18px 22px;
+    border-radius: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    margin: 10px auto 20px auto;
+    max-width: 750px;
+    border: 1px solid #cbd5e1;
+}
+.results-header .stat-item {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+}
+.results-header .stat-item .label {
+    font-weight: 600;
+    color: #64748b;
+    font-size: 0.85rem;
+}
+.results-header .stat-item .value {
+    font-weight: 900;
+    font-size: 1.2rem;
+    color: #0f172a;
+    font-family: 'Cairo', 'Tajawal', sans-serif !important;
+}
+.results-table tbody tr:nth-child(even) {
+    background-color: #f8fafc;
+}
+.results-table tbody tr:hover {
+    background-color: #eef2ff;
+}
+.percentage-badge {
+    background: #dbeafe;
+    color: #1e40af;
+    padding: 2px 10px;
+    border-radius: 30px;
+    font-weight: 800;
+    font-size: 0.8rem;
+}
+
+.symbol-box {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px;
+    background: #ffffff;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+}
+
+.symbol-item {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    background: #f1f5f9;
+    border-radius: 8px;
+    border: 1px solid #cbd5e1;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #0f172a;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none;
+    font-family: 'Tahoma', 'Arial', 'Noto Sans Arabic', sans-serif !important;
+}
+
+.symbol-item:hover {
+    background: #dbeafe;
+    border-color: #4f46e5;
+    transform: scale(1.08);
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
+}
+
+.symbol-item:active {
+    transform: scale(0.92);
+}
+
+.copy-icon {
+    display: inline-block;
+    background: #e2e8f0;
+    padding: 0 10px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    margin-right: 5px;
+    transition: 0.2s;
+    user-select: none;
+    line-height: 1.8;
+    color: #1e293b;
+    font-weight: 700 !important;
+}
+.copy-icon:hover {
+    background: #cbd5e1;
+    transform: scale(1.05);
+}
+
+/* ===== تحسين جدول النتائج للجوال مع تصغير عمود الرقم ===== */
+.results-table th:first-child,
+.results-table td:first-child {
+    width: 5% !important;
+    min-width: 30px !important;
+    max-width: 40px !important;
+    padding: 6px 2px !important;
+    font-size: 0.7rem !important;
+}
+
+@media (max-width: 600px) {
+    table {
+        font-size: 0.75rem;
+        width: 98%;
+    }
+    th, td {
+        padding: 6px 4px;
+        font-size: 0.7rem;
+    }
+    /* تقليل عرض عمود الرقم والإجراءات */
+    td:first-child, th:first-child {
+        width: 5% !important;
+        min-width: 20px !important;
+        max-width: 30px !important;
+        padding: 4px 2px !important;
+        font-size: 0.6rem !important;
+    }
+    td:last-child, th:last-child {
+        width: 18%;
+        min-width: 60px;
+    }
+    /* زيادة عرض اسم الطالب والمعلومات */
+    td:nth-child(3), th:nth-child(3) {
+        width: 30%;
+        min-width: 70px;
+    }
+    td:nth-child(4), th:nth-child(4) {
+        width: 18%;
+        min-width: 50px;
+    }
+    td:nth-child(5), th:nth-child(5) {
+        width: 15%;
+        min-width: 50px;
+    }
+    td:nth-child(6), th:nth-child(6) {
+        width: 10%;
+        min-width: 40px;
+    }
+    td:nth-child(7), th:nth-child(7) {
+        width: 8%;
+        min-width: 30px;
+    }
+    td:nth-child(8), th:nth-child(8) {
+        width: 12%;
+        min-width: 50px;
+    }
+    /* تحسين checkboxes */
+    .results-table th:first-child input[type="checkbox"],
+    .results-table td:first-child input[type="checkbox"] {
+        transform: scale(1.2);
+        margin: 0;
+    }
+    .results-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+        padding: 12px 16px;
+    }
+    .results-header .stat-item {
+        width: 100%;
+        justify-content: space-between;
+    }
+    .classroom-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+        padding: 8px 0;
+    }
+    .classroom-card {
+        padding: 14px 12px;
+        border-radius: 14px;
+    }
+    .exam-card-item {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+        padding: 14px 12px;
+    }
+    .exam-card-item .exam-actions {
+        justify-content: center;
+    }
+    .exam-card-item .exam-actions .desine-btn {
+        padding: 6px 14px;
+        font-size: 0.7rem;
+    }
+    .desine-btn {
+        font-size: 0.8rem;
+        padding: 8px 12px;
+    }
+    header p {
+        font-size: 1rem;
+    }
+    .symbol-item {
+        width: 38px;
+        height: 38px;
+        font-size: 1rem;
+    }
 }

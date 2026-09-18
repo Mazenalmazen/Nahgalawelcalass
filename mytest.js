@@ -52,13 +52,6 @@ async function get_ans_data() {
 
     var exam_number = window.currentActiveExam ? window.currentActiveExam.exam_number : 0;
 
-    let finishedExams = JSON.parse(localStorage.getItem('finished_exams') || '[]');
-    if (finishedExams.includes(String(exam_number))) {
-        alert('عذراً، لقد قمت بتسليم هذا الاختبار مسبقاً ولا يمكنك إرساله مرة أخرى.');
-        go_page('page_home');
-        return;
-    }
-
     let submitBtn = $('#Tasleem');
     if (submitBtn.prop('disabled')) return;
     submitBtn.prop('disabled', true).css('opacity', '0.6');
@@ -71,17 +64,40 @@ async function get_ans_data() {
 
     $('#load').show();
 
+    let attemptsKey = 'exam_attempt_count_' + exam_number;
+    let currentAttempt = parseInt(localStorage.getItem(attemptsKey) || '0') + 1;
+
+    let submitName = currentAttempt > 1 ? std_name + ' (محاولة ' + currentAttempt + ')' : std_name;
+
     let pseudoStudentNumber = 'std_' + Math.floor(10000 + Math.random() * 90000);
     let activeQuestionsForStudent = window.currentActiveExamQuestionsList || window.currentActiveExam?.exam_data?.questions || [];
 
-    // استدعاء التصحيح السحابي مع إرسال الأسئلة النشطة التي ظهرت للطالب حصرياً
+    // ===== توافق مع الخادم: نقل الإجابة الصحيحة إلى الفهرس 0 قبل الإرسال =====
+    // (لا يؤثر على تجربة الطالب - الخيارات تظهر بالترتيب الأصلي)
+    let questionsForServer = activeQuestionsForStudent.map(q => {
+        let qCopy = {
+            question: q.question,
+            options: q.options ? [...q.options] : [],
+            correctIndex: (q.correctIndex !== undefined) ? q.correctIndex : 0
+        };
+        
+        // نقل الإجابة الصحيحة إلى الفهرس 0 فقط للتوافق مع دالة الخادم
+        if (qCopy.correctIndex > 0 && qCopy.options[qCopy.correctIndex]) {
+            let temp = qCopy.options[0];
+            qCopy.options[0] = qCopy.options[qCopy.correctIndex];
+            qCopy.options[qCopy.correctIndex] = temp;
+        }
+        
+        return qCopy;
+    });
+
     let { data, error } = await window._supabase.rpc('submit_exam_result', {
         p_exam_number: Number(exam_number),
-        p_student_name: String(std_name),
+        p_student_name: String(submitName),
         p_student_number: String(pseudoStudentNumber),
         p_student_info: String(std_info || ''),
         p_answers_data: answers,
-        p_active_questions: activeQuestionsForStudent
+        p_active_questions: questionsForServer
     });
 
     $('#load').hide();
@@ -93,36 +109,49 @@ async function get_ans_data() {
     }
 
     if (data && data.status === 'duplicate') {
-        if (!finishedExams.includes(String(exam_number))) {
-            finishedExams.push(String(exam_number));
-            localStorage.setItem('finished_exams', JSON.stringify(finishedExams));
-        }
-
-        alert('عذراً، نتيجتك لهذا الامتحان مسجّلة مسبقاً ولا يمكن تسليم الاختبار أكثر من مرة.');
-        go_page('page_home');
-        $('#Tasleem').addClass('Dnone');
-        $('#Takeed').removeClass('Dnone');
-        if (typeof readAll_ans_saveded_new === 'function') {
-            readAll_ans_saveded_new();
-        }
-        return;
+        console.warn('الخادم رفض التسليم كتكرار، سيتم الحفظ محلياً فقط');
     }
 
-    if (!finishedExams.includes(String(exam_number))) {
-        finishedExams.push(String(exam_number));
-        localStorage.setItem('finished_exams', JSON.stringify(finishedExams));
-    }
+    localStorage.setItem(attemptsKey, currentAttempt);
 
     let finalDegree = data?.degree ?? 0;
-    let totalQuestionsCount = data?.total_questions ?? 0;
+    let totalQuestionsCount = data?.total_questions ?? activeQuestionsForStudent.length;
     let gradeText = `${finalDegree} / ${totalQuestionsCount}`;
 
     let studentGrades = JSON.parse(localStorage.getItem('student_grades') || '{}');
-    studentGrades[exam_number] = gradeText;
+    
+    if (studentGrades[exam_number] && !Array.isArray(studentGrades[exam_number])) {
+        studentGrades[exam_number] = [{
+            grade: studentGrades[exam_number],
+            obtained: 0,
+            total: 0,
+            date: new Date().toISOString(),
+            attempt: 1
+        }];
+    }
+    if (!Array.isArray(studentGrades[exam_number])) {
+        studentGrades[exam_number] = [];
+    }
+    
+    studentGrades[exam_number].push({
+        grade: gradeText,
+        obtained: finalDegree,
+        total: totalQuestionsCount,
+        date: new Date().toISOString(),
+        attempt: currentAttempt
+    });
     localStorage.setItem('student_grades', JSON.stringify(studentGrades));
 
     let studentSubmissions = JSON.parse(localStorage.getItem('student_submissions') || '{}');
-    studentSubmissions[exam_number] = answers;
+    
+    if (studentSubmissions[exam_number] && !Array.isArray(studentSubmissions[exam_number])) {
+        studentSubmissions[exam_number] = [studentSubmissions[exam_number]];
+    }
+    if (!Array.isArray(studentSubmissions[exam_number])) {
+        studentSubmissions[exam_number] = [];
+    }
+    
+    studentSubmissions[exam_number].push(answers);
     localStorage.setItem('student_submissions', JSON.stringify(studentSubmissions));
 
     $('#Tasleem').addClass('Dnone');
@@ -135,6 +164,7 @@ async function get_ans_data() {
     openStudentFullReviewAfterSubmit(gradeText, exam_number, answers, activeQuestionsForStudent);
 }
 
+// ===== التصحيح: استخدام correctIndex لتحديد الإجابة الصحيحة =====
 function openStudentFullReviewAfterSubmit(gradeText, exam_number, myAnswers, activeQuestions) {
     let exam = window.currentActiveExam;
     if (!exam) {
@@ -143,7 +173,7 @@ function openStudentFullReviewAfterSubmit(gradeText, exam_number, myAnswers, act
         return;
     }
 
-    var numbers = ['⓵', '⓶', '⓷', '⓸'];
+    var numbers = ['❶', '❷', '❸', '❹'];
     let questionsList = activeQuestions.length > 0 ? activeQuestions : (exam.exam_data?.questions || []);
 
     var reviewHtml = `<div style="text-align:right; max-width:700px; margin:20px auto; padding:20px; background:#fff; border-radius:16px; box-shadow:0 4px 12px rgba(0,0,0,0.05);">
@@ -157,7 +187,13 @@ function openStudentFullReviewAfterSubmit(gradeText, exam_number, myAnswers, act
     if (questionsList.length > 0) {
         questionsList.forEach((q, qIndex) => {
             let stdAns = myAnswers['q_' + qIndex] || 'لم يجب';
-            let correctAns = (q.options && q.options.length > 0) ? q.options[0] : '';
+            
+            // ✅ التصحيح: استخدام correctIndex بدلاً من الافتراض بأنه في الفهرس 0
+            let correctIdx = (q.correctIndex !== undefined) ? q.correctIndex : 0;
+            let correctAns = (q.options && q.options.length > 0 && q.options[correctIdx] !== undefined) 
+                ? q.options[correctIdx] 
+                : (q.options && q.options.length > 0 ? q.options[0] : '');
+            
             let isCorrect = (stdAns === correctAns && stdAns !== 'لم يجب');
             let boxBg = isCorrect ? '#f0fdf4' : '#fef2f2';
             let boxBorder = isCorrect ? '#bbf7d0' : '#fecaca';
