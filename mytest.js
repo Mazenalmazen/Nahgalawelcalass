@@ -50,6 +50,9 @@ async function get_ans_data() {
         return;
     }
 
+    // ✅ حفظ اسم الطالب في localStorage لعرض بطاقة التقييم لاحقاً
+    localStorage.setItem('studentName', std_name);
+
     var exam_number = window.currentActiveExam ? window.currentActiveExam.exam_number : 0;
 
     let submitBtn = $('#Tasleem');
@@ -73,7 +76,6 @@ async function get_ans_data() {
     let activeQuestionsForStudent = window.currentActiveExamQuestionsList || window.currentActiveExam?.exam_data?.questions || [];
 
     // ===== توافق مع الخادم: نقل الإجابة الصحيحة إلى الفهرس 0 قبل الإرسال =====
-    // (لا يؤثر على تجربة الطالب - الخيارات تظهر بالترتيب الأصلي)
     let questionsForServer = activeQuestionsForStudent.map(q => {
         let qCopy = {
             question: q.question,
@@ -81,7 +83,6 @@ async function get_ans_data() {
             correctIndex: (q.correctIndex !== undefined) ? q.correctIndex : 0
         };
         
-        // نقل الإجابة الصحيحة إلى الفهرس 0 فقط للتوافق مع دالة الخادم
         if (qCopy.correctIndex > 0 && qCopy.options[qCopy.correctIndex]) {
             let temp = qCopy.options[0];
             qCopy.options[0] = qCopy.options[qCopy.correctIndex];
@@ -151,7 +152,12 @@ async function get_ans_data() {
         studentSubmissions[exam_number] = [];
     }
     
-    studentSubmissions[exam_number].push(answers);
+    studentSubmissions[exam_number].push({
+        answers: answers,
+        questions: activeQuestionsForStudent,
+        date: new Date().toISOString(),
+        attempt: currentAttempt
+    });
     localStorage.setItem('student_submissions', JSON.stringify(studentSubmissions));
 
     $('#Tasleem').addClass('Dnone');
@@ -161,10 +167,24 @@ async function get_ans_data() {
         readAll_ans_saveded_new();
     }
 
+    // عرض المراجعة الكاملة
     openStudentFullReviewAfterSubmit(gradeText, exam_number, answers, activeQuestionsForStudent);
+
+    // ✅ إظهار زر بطاقة التقييم بعد التسليم
+    setTimeout(() => {
+        if ($('#evaluation_btn_container').length === 0) {
+            $('#page_full_review').append(`
+                <div id="evaluation_btn_container" style="text-align:center; margin-top:15px;">
+                    <button class="desine-btn" onclick="openStudentEvaluation()" style="background:linear-gradient(135deg, #7c3aed, #4f46e5); width:100%; max-width:400px; padding:14px; font-size:1rem; font-weight:900; border-radius:12px; box-shadow:0 6px 20px rgba(124,58,237,0.35);">
+                        <i class="fas fa-chart-line"></i> عرض بطاقة التقييم الشخصية
+                    </button>
+                </div>
+            `);
+        }
+    }, 500);
 }
 
-// ===== التصحيح: استخدام correctIndex لتحديد الإجابة الصحيحة =====
+// ===== استخدام correctIndex لتحديد الإجابة الصحيحة =====
 function openStudentFullReviewAfterSubmit(gradeText, exam_number, myAnswers, activeQuestions) {
     let exam = window.currentActiveExam;
     if (!exam) {
@@ -188,7 +208,6 @@ function openStudentFullReviewAfterSubmit(gradeText, exam_number, myAnswers, act
         questionsList.forEach((q, qIndex) => {
             let stdAns = myAnswers['q_' + qIndex] || 'لم يجب';
             
-            // ✅ التصحيح: استخدام correctIndex بدلاً من الافتراض بأنه في الفهرس 0
             let correctIdx = (q.correctIndex !== undefined) ? q.correctIndex : 0;
             let correctAns = (q.options && q.options.length > 0 && q.options[correctIdx] !== undefined) 
                 ? q.options[correctIdx] 

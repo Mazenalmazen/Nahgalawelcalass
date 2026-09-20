@@ -1,8 +1,24 @@
-let currentExamResultsCache = [];
+var currentExamResultsCache = [];
 
 async function load_exam_results(exam_number) {
     if (!exam_number) return;
     window.currentExamNumberForResults = exam_number;
+
+    // ✅ جلب عدد أسئلة الاختبار لتستخدمه دالة النسبة
+    try {
+        let { data: examInfo } = await window._supabase
+            .from('exams')
+            .select('exam_data')
+            .eq('exam_number', exam_number)
+            .single();
+        if (examInfo && examInfo.exam_data && Array.isArray(examInfo.exam_data.questions)) {
+            window.__currentExamTotalQuestions = examInfo.exam_data.questions.length;
+        } else {
+            window.__currentExamTotalQuestions = 0;
+        }
+    } catch (e) {
+        window.__currentExamTotalQuestions = 0;
+    }
 
     $('#showresult').html('<div style="text-align:center; padding:30px;"><img id="img_load_result" src="img/load.gif" /></div>');
     
@@ -13,7 +29,17 @@ async function load_exam_results(exam_number) {
         .order('submitted_at', { ascending: false });
 
     if (error) {
-        alert('خطأ في جلب النتائج: ' + error.message);
+        if (typeof Swal !== 'undefined' && Swal.fire) {
+            Swal.fire({
+                icon: 'error',
+                title: 'خطأ',
+                text: 'خطأ في جلب النتائج: ' + error.message,
+                confirmButtonText: 'حسناً',
+                confirmButtonColor: '#4f46e5'
+            });
+        } else {
+            alert('خطأ في جلب النتائج: ' + error.message);
+        }
         $('#showresult').html('<div style="text-align:center; padding:30px; color:var(--danger);">حدث خطأ في جلب النتائج</div>');
         return;
     }
@@ -33,6 +59,9 @@ function renderResultsTable(resultsArray) {
         <div style="text-align:center; margin-bottom:15px; display:flex; justify-content:center; gap:10px; flex-wrap:wrap;">
             <button class="desine-btn" onclick="recalculateExamResults(${window.currentExamNumberForResults})" style="background:#f59e0b; padding:10px 25px; font-size:0.95rem; display:inline-block; margin:0;">
                 <i class="fas fa-calculator"></i> إعادة حساب النتائج
+            </button>
+            <button class="desine-btn" onclick="analyzeResultsWithAI()" style="background:linear-gradient(135deg, #7c3aed, #4f46e5); padding:10px 25px; font-size:0.95rem; display:inline-block; margin:0; box-shadow:0 4px 15px rgba(124,58,237,0.35);">
+                <i class="fas fa-robot"></i> تحليل ذكي للنتائج
             </button>
         </div>
     `;
@@ -55,21 +84,25 @@ function renderResultsTable(resultsArray) {
     `;
 
     let totalStudents = resultsArray.length;
-    let totalDegrees = 0;
+    let totalObtainedSum = 0;
     let validCount = 0;
     resultsArray.forEach(res => {
         if (res.degree) {
-            let parts = String(res.degree).split('/');
-            if (parts.length === 2) {
-                let obtained = parseFloat(parts[0]);
-                if (!isNaN(obtained)) {
-                    totalDegrees += obtained;
-                    validCount++;
-                }
+            const degreeStr = String(res.degree).trim();
+            let obtained = 0;
+            if (degreeStr.includes('/')) {
+                let parts = degreeStr.split('/');
+                if (parts.length === 2) obtained = parseFloat(parts[0]);
+            } else {
+                obtained = parseFloat(degreeStr);
+            }
+            if (!isNaN(obtained)) {
+                totalObtainedSum += obtained;
+                validCount++;
             }
         }
     });
-    let avg = validCount > 0 ? (totalDegrees / validCount).toFixed(1) : '0.0';
+    let avg = validCount > 0 ? (totalObtainedSum / validCount).toFixed(1) : '0.0';
 
     let headerHtml = `
         <div class="results-header">
@@ -107,15 +140,26 @@ function renderResultsTable(resultsArray) {
         let dateStr = res.submitted_at ? new Date(res.submitted_at).toLocaleString('ar-SA') : 'وقت غير متوفر';
         let encodedResData = encodeURIComponent(JSON.stringify(res));
 
+        // ✅ إصلاح: يدعم الصيغتين "32/40" و "32"
         let percentage = '-';
         if (res.degree) {
-            let parts = String(res.degree).split('/');
-            if (parts.length === 2) {
-                let obtained = parseFloat(parts[0]);
-                let total = parseFloat(parts[1]);
-                if (total > 0) {
-                    percentage = ((obtained / total) * 100).toFixed(0) + '%';
+            let degreeStr = String(res.degree).trim();
+            let obtained = 0;
+            let total = 0;
+
+            if (degreeStr.includes('/')) {
+                let parts = degreeStr.split('/');
+                if (parts.length === 2) {
+                    obtained = parseFloat(parts[0]);
+                    total = parseFloat(parts[1]);
                 }
+            } else {
+                obtained = parseFloat(degreeStr);
+                total = window.__currentExamTotalQuestions || 0;
+            }
+
+            if (total > 0 && !isNaN(obtained)) {
+                percentage = ((obtained / total) * 100).toFixed(0) + '%';
             }
         }
 
@@ -188,23 +232,63 @@ function getAllStudentNames() {
 function copySelectedStudentNames() {
     let names = getSelectedStudentNames();
     if (names.length === 0) {
-        alert('الرجاء تحديد طالب واحد على الأقل');
+        if (typeof Swal !== 'undefined' && Swal.fire) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'تنبيه',
+                text: 'الرجاء تحديد طالب واحد على الأقل',
+                confirmButtonText: 'حسناً',
+                confirmButtonColor: '#4f46e5'
+            });
+        } else {
+            alert('الرجاء تحديد طالب واحد على الأقل');
+        }
         return;
     }
     let text = names.join('\n');
     copyToClipboard(text);
-    alert(`✅ تم نسخ ${names.length} اسم بنجاح`);
+    if (typeof Swal !== 'undefined' && Swal.fire) {
+        Swal.fire({
+            icon: 'success',
+            title: 'نجاح',
+            text: 'تم نسخ ' + names.length + ' اسم بنجاح',
+            confirmButtonText: 'حسناً',
+            confirmButtonColor: '#4f46e5'
+        });
+    } else {
+        alert('تم نسخ ' + names.length + ' اسم بنجاح');
+    }
 }
 
 function copyAllStudentNames() {
     let names = getAllStudentNames();
     if (names.length === 0) {
-        alert('لا توجد أسماء للنسخ');
+        if (typeof Swal !== 'undefined' && Swal.fire) {
+            Swal.fire({
+                icon: 'info',
+                title: 'معلومة',
+                text: 'لا توجد أسماء للنسخ',
+                confirmButtonText: 'حسناً',
+                confirmButtonColor: '#4f46e5'
+            });
+        } else {
+            alert('لا توجد أسماء للنسخ');
+        }
         return;
     }
     let text = names.join('\n');
     copyToClipboard(text);
-    alert(`✅ تم نسخ جميع الأسماء (${names.length} اسم)`);
+    if (typeof Swal !== 'undefined' && Swal.fire) {
+        Swal.fire({
+            icon: 'success',
+            title: 'نجاح',
+            text: 'تم نسخ جميع الأسماء (' + names.length + ' اسم)',
+            confirmButtonText: 'حسناً',
+            confirmButtonColor: '#4f46e5'
+        });
+    } else {
+        alert('تم نسخ جميع الأسماء (' + names.length + ' اسم)');
+    }
 }
 
 function copyToClipboard(text) {
@@ -229,18 +313,42 @@ function fallbackCopyText(text) {
 // ===== إعادة حساب النتائج بعد تعديل الإجابات الصحيحة =====
 async function recalculateExamResults(exam_number) {
     if (!exam_number) {
-        alert('رقم الاختبار غير محدد');
+        if (typeof Swal !== 'undefined' && Swal.fire) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'تنبيه',
+                text: 'رقم الاختبار غير محدد',
+                confirmButtonText: 'حسناً',
+                confirmButtonColor: '#4f46e5'
+            });
+        } else {
+            alert('رقم الاختبار غير محدد');
+        }
         return;
     }
 
-    if (!confirm('سيتم إعادة حساب درجات جميع الطلاب بناءً على الإجابات الصحيحة الحالية.\n\nملاحظة: يتم استخدام ترتيب الأسئلة والإجابات كما ظهرت للطالب عند أداء الاختبار.\n\nهل تريد المتابعة؟')) {
-        return;
+    let confirmed = false;
+    if (typeof Swal !== 'undefined' && Swal.fire) {
+        let result = await Swal.fire({
+            icon: 'question',
+            title: 'تأكيد إعادة الحساب',
+            html: 'سيتم إعادة حساب درجات جميع الطلاب بناءً على الإجابات الصحيحة الحالية.<br><small style="color:#64748b;">ملاحظة: يتم استخدام ترتيب الأسئلة والإجابات كما ظهرت للطالب عند أداء الاختبار.</small>',
+            showCancelButton: true,
+            confirmButtonText: 'نعم، أعد الحساب',
+            cancelButtonText: 'إلغاء',
+            confirmButtonColor: '#f59e0b',
+            cancelButtonColor: '#64748b'
+        });
+        confirmed = result.isConfirmed;
+    } else {
+        confirmed = confirm('سيتم إعادة حساب درجات جميع الطلاب بناءً على الإجابات الصحيحة الحالية.\n\nهل تريد المتابعة؟');
     }
+    
+    if (!confirmed) return;
 
     $('#load').show();
 
     try {
-        // 1) جلب بيانات الاختبار (الأسئلة والإجابات الصحيحة الحالية)
         let { data: examData, error: examErr } = await window._supabase
             .from('exams')
             .select('exam_data')
@@ -249,7 +357,7 @@ async function recalculateExamResults(exam_number) {
 
         if (examErr || !examData) {
             $('#load').hide();
-            alert('❌ تعذر جلب بيانات الاختبار');
+            alert('تعذر جلب بيانات الاختبار');
             return;
         }
 
@@ -257,11 +365,10 @@ async function recalculateExamResults(exam_number) {
 
         if (questions.length === 0) {
             $('#load').hide();
-            alert('⚠️ لا توجد أسئلة في هذا الاختبار');
+            alert('لا توجد أسئلة في هذا الاختبار');
             return;
         }
 
-        // 2) جلب جميع نتائج الطلاب
         let { data: results, error: resErr } = await window._supabase
             .from('results')
             .select('*')
@@ -269,7 +376,7 @@ async function recalculateExamResults(exam_number) {
 
         if (resErr) {
             $('#load').hide();
-            alert('❌ تعذر جلب النتائج: ' + resErr.message);
+            alert('تعذر جلب النتائج: ' + resErr.message);
             return;
         }
 
@@ -283,16 +390,12 @@ async function recalculateExamResults(exam_number) {
         let unchangedCount = 0;
         let failedCount = 0;
 
-        // 3) إعادة حساب الدرجة لكل طالب
         for (let res of results) {
             let studentAnswers = res.answers_data || {};
             let newObtained = 0;
 
-            // ✅ استخدام الأسئلة النشطة المحفوظة مع النتيجة إن وُجدت
-            // (لدعم بنك الأسئلة والترتيب العشوائي للأسئلة)
             let activeQuestions = res.active_questions || questions;
             
-            // إذا كانت الأسئلة النشطة فارغة أو غير موجودة، نستخدم أسئلة الاختبار الكاملة
             if (!activeQuestions || activeQuestions.length === 0) {
                 activeQuestions = questions;
             }
@@ -312,7 +415,6 @@ async function recalculateExamResults(exam_number) {
             let totalCount = activeQuestions.length;
             let newGradeText = newObtained + '/' + totalCount;
 
-            // مقارنة مع الدرجة القديمة
             if (String(res.degree) !== String(newGradeText)) {
                 let { error: updErr } = await window._supabase
                     .from('results')
@@ -332,23 +434,31 @@ async function recalculateExamResults(exam_number) {
 
         $('#load').hide();
 
-        // عرض تقرير النتائج
-        let msg = '✅ تم إعادة حساب النتائج بنجاح\n\n';
-        msg += '📊 الطلاب الذين تغيرت درجاتهم: ' + updatedCount + '\n';
-        msg += '⚪ الطلاب الذين بقيت درجاتهم كما هي: ' + unchangedCount + '\n';
+        let msg = 'تم إعادة حساب النتائج بنجاح\n\n';
+        msg += 'الطلاب الذين تغيرت درجاتهم: ' + updatedCount + '\n';
+        msg += 'الطلاب الذين بقيت درجاتهم كما هي: ' + unchangedCount + '\n';
         
         if (failedCount > 0) {
-            msg += '❌ فشل تحديث: ' + failedCount + ' طالب\n';
+            msg += 'فشل تحديث: ' + failedCount + ' طالب\n';
         }
         
-        alert(msg);
+        if (typeof Swal !== 'undefined' && Swal.fire) {
+            Swal.fire({
+                icon: 'success',
+                title: 'نجاح',
+                html: msg.replace(/\n/g, '<br>'),
+                confirmButtonText: 'حسناً',
+                confirmButtonColor: '#4f46e5'
+            });
+        } else {
+            alert(msg);
+        }
 
-        // إعادة تحميل الجدول
         load_exam_results(exam_number);
 
     } catch (e) {
         $('#load').hide();
-        alert('❌ حدث خطأ: ' + e.message);
+        alert('حدث خطأ: ' + e.message);
     }
 }
 
@@ -356,14 +466,21 @@ function showHonorBoardModal() {
     let resultsArray = currentExamResultsCache || [];
     let honorStudents = resultsArray.filter(res => {
         if (!res.degree) return false;
-        let parts = String(res.degree).split('/');
-        if (parts.length === 2) {
-            let obtained = parseFloat(parts[0]);
-            let total = parseFloat(parts[1]);
-            if (total > 0) {
-                let percentage = (obtained / total) * 100;
-                return percentage >= 98;
+        let degreeStr = String(res.degree).trim();
+        let obtained = 0, total = 0;
+        if (degreeStr.includes('/')) {
+            let parts = degreeStr.split('/');
+            if (parts.length === 2) {
+                obtained = parseFloat(parts[0]);
+                total = parseFloat(parts[1]);
             }
+        } else {
+            obtained = parseFloat(degreeStr);
+            total = window.__currentExamTotalQuestions || 0;
+        }
+        if (total > 0 && !isNaN(obtained)) {
+            let percentage = (obtained / total) * 100;
+            return percentage >= 98;
         }
         return false;
     });
@@ -409,7 +526,7 @@ function showHonorBoardModal() {
     $('body').append(honorHtml);
 }
 
-// ===== مراجعة إجابات الطالب (باستخدام correctIndex) =====
+// ===== مراجعة إجابات الطالب =====
 async function reviewStudentPaper(encodedJson) {
     let resObj = JSON.parse(decodeURIComponent(encodedJson));
     let examNum = resObj.exam_number;
@@ -423,7 +540,6 @@ async function reviewStudentPaper(encodedJson) {
     let questionsList = examData?.exam_data?.questions || [];
     let studentAnswers = resObj.answers_data || {};
     
-    // ✅ استخدام الأسئلة النشطة المحفوظة مع النتيجة (لدعم بنك الأسئلة)
     if (resObj.active_questions && Array.isArray(resObj.active_questions) && resObj.active_questions.length > 0) {
         questionsList = resObj.active_questions;
     }
@@ -445,7 +561,6 @@ async function reviewStudentPaper(encodedJson) {
         questionsList.forEach((q, qIdx) => {
             let stdAns = studentAnswers['q_' + qIdx] || 'لم يجب';
             
-            // ✅ استخدام correctIndex لتحديد الإجابة الصحيحة
             let correctIdx = (q.correctIndex !== undefined) ? q.correctIndex : 0;
             let correctAns = (q.options && q.options.length > 0 && q.options[correctIdx] !== undefined)
                 ? q.options[correctIdx]
@@ -503,9 +618,17 @@ function sortResultsByCriteria(criteria) {
     if (criteria === 'date') {
         sorted.sort((a, b) => new Date(b.submitted_at) - new Date(a.submitted_at));
     } else if (criteria === 'degree_desc') {
-        sorted.sort((a, b) => Number(b.degree) - Number(a.degree));
+        sorted.sort((a, b) => {
+            let aVal = parseFloat(String(a.degree).split('/')[0]) || 0;
+            let bVal = parseFloat(String(b.degree).split('/')[0]) || 0;
+            return bVal - aVal;
+        });
     } else if (criteria === 'degree_asc') {
-        sorted.sort((a, b) => Number(a.degree) - Number(b.degree));
+        sorted.sort((a, b) => {
+            let aVal = parseFloat(String(a.degree).split('/')[0]) || 0;
+            let bVal = parseFloat(String(b.degree).split('/')[0]) || 0;
+            return aVal - bVal;
+        });
     } else if (criteria === 'name') {
         sorted.sort((a, b) => a.student_name.localeCompare(b.student_name, 'ar'));
     }
@@ -516,13 +639,38 @@ function sortResultsByCriteria(criteria) {
 async function delete_result() {
     var exam_number = window.currentExamNumberForResults;
     if (!exam_number) {
-        alert('رقم الاختبار غير محدد');
+        if (typeof Swal !== 'undefined' && Swal.fire) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'تنبيه',
+                text: 'رقم الاختبار غير محدد',
+                confirmButtonText: 'حسناً',
+                confirmButtonColor: '#4f46e5'
+            });
+        } else {
+            alert('رقم الاختبار غير محدد');
+        }
         return;
     }
 
-    if (!confirm('هل أنت متأكد من حذف جميع نتائج هذا الاختبار نهائياً؟')) {
-        return;
+    let confirmed = false;
+    if (typeof Swal !== 'undefined' && Swal.fire) {
+        let result = await Swal.fire({
+            icon: 'warning',
+            title: 'تأكيد الحذف',
+            text: 'هل أنت متأكد من حذف جميع نتائج هذا الاختبار نهائياً؟',
+            showCancelButton: true,
+            confirmButtonText: 'نعم، احذف',
+            cancelButtonText: 'إلغاء',
+            confirmButtonColor: '#dc2626',
+            cancelButtonColor: '#64748b'
+        });
+        confirmed = result.isConfirmed;
+    } else {
+        confirmed = confirm('هل أنت متأكد من حذف جميع نتائج هذا الاختبار نهائياً؟');
     }
+
+    if (!confirmed) return;
 
     $('#load').show();
     let { error } = await window._supabase
@@ -533,13 +681,43 @@ async function delete_result() {
     $('#load').hide();
 
     if (error) {
-        alert('خطأ أثناء حذف النتائج: ' + error.message);
+        if (typeof Swal !== 'undefined' && Swal.fire) {
+            Swal.fire({
+                icon: 'error',
+                title: 'خطأ',
+                text: 'خطأ أثناء حذف النتائج: ' + error.message,
+                confirmButtonText: 'حسناً',
+                confirmButtonColor: '#4f46e5'
+            });
+        } else {
+            alert('خطأ أثناء حذف النتائج: ' + error.message);
+        }
     } else {
-        alert('تم حذف النتائج بنجاح');
+        if (typeof Swal !== 'undefined' && Swal.fire) {
+            Swal.fire({
+                icon: 'success',
+                title: 'نجاح',
+                text: 'تم حذف النتائج بنجاح',
+                confirmButtonText: 'حسناً',
+                confirmButtonColor: '#4f46e5'
+            });
+        } else {
+            alert('تم حذف النتائج بنجاح');
+        }
         load_exam_results(exam_number);
     }
 }
 
 function save_excel() {
-    alert('تم تجهيز البيانات، سيتم تصدير ملف النتائج بصيغة Excel قريباً.');
+    if (typeof Swal !== 'undefined' && Swal.fire) {
+        Swal.fire({
+            icon: 'info',
+            title: 'معلومة',
+            text: 'سيتم تصدير ملف النتائج بصيغة Excel قريباً.',
+            confirmButtonText: 'حسناً',
+            confirmButtonColor: '#4f46e5'
+        });
+    } else {
+        alert('تم تجهيز البيانات، سيتم تصدير ملف النتائج بصيغة Excel قريباً.');
+    }
 }

@@ -548,11 +548,10 @@ function startDownloadedExam(exam_number) {
     go_page('page_mytest');
 }
 
-// ===== دالة مساعدة: توحيد بيانات المحاولات (قديمة + جديدة) =====
+// ===== دالة مساعدة: توحيد بيانات المحاولات =====
 function normalizeSubmissionData(data) {
     if (!data) return null;
     
-    // شكل جديد: مصفوفة من كائنات {answers, questions, attempt, date}
     if (Array.isArray(data)) {
         if (data.length === 0) return null;
         let last = data[data.length - 1];
@@ -563,11 +562,9 @@ function normalizeSubmissionData(data) {
                 isLegacy: !last.questions 
             };
         }
-        // شكل قديم جداً: مصفوفة من كائنات الإجابات فقط
         return { answers: last, questions: null, isLegacy: true };
     }
     
-    // شكل قديم: كائن إجابات مباشر {q_0:'x', q_1:'y'}
     if (typeof data === 'object') {
         return { answers: data, questions: null, isLegacy: true };
     }
@@ -575,7 +572,7 @@ function normalizeSubmissionData(data) {
     return null;
 }
 
-// ===== مراجعة الاختبار: تدعم الشكل القديم والجديد =====
+// ===== مراجعة الاختبار =====
 function reviewExam(exam_number) {
     let savedExams = JSON.parse(localStorage.getItem('downloaded_exams') || '[]');
     let exam = savedExams.find(e => e.exam_number == exam_number);
@@ -598,10 +595,8 @@ function reviewExam(exam_number) {
     let activeQuestions;
 
     if (normalized.questions && normalized.questions.length > 0) {
-        // ✅ الشكل الجديد: الأسئلة النشطة محفوظة مع المحاولة
         activeQuestions = normalized.questions;
     } else {
-        // ⚠️ الشكل القديم: اقتصاص الأسئلة حسب عدد الإجابات المُجابة فعلياً
         let answerCount = Object.keys(myAnswers).length;
         let allExamQuestions = (exam.exam_data && exam.exam_data.questions) || [];
         activeQuestions = allExamQuestions.slice(0, answerCount);
@@ -626,12 +621,11 @@ function reviewExam(exam_number) {
     }
 }
 
-// ===== سجل المحاولات: يدعم الشكل القديم والجديد =====
+// ===== سجل المحاولات =====
 function viewAllAttempts(exam_number) {
     let studentGrades = JSON.parse(localStorage.getItem('student_grades') || '{}');
     let gradesData = studentGrades[exam_number];
     
-    // تحويل الشكل القديم (نص واحد) إلى مصفوفة
     if (gradesData && typeof gradesData === 'string') {
         gradesData = [{
             grade: gradesData,
@@ -695,7 +689,7 @@ function viewAllAttempts(exam_number) {
     $('body').append(html);
 }
 
-// ==================== الفصول الإلكترونية (نسخة المستخدم) ====================
+// ==================== الفصول الإلكترونية ====================
 function goClassroomsPage() {
     go_page('page_classrooms');
     $('#teacher_class_creation_box').addClass('Dnone').hide();
@@ -748,6 +742,7 @@ async function studentJoinClassroom() {
         alert('تم الانضمام إلى الفصل بنجاح: ' + clsData.class_name);
         $('#student_join_code').val('');
         $('#student_join_name').val('');
+        localStorage.setItem('studentName', stdName);
         manageSingleClassroom(clsData.class_code, clsData.class_name);
     }
 }
@@ -801,6 +796,7 @@ async function insideJoinClassroom() {
         alert('تم الانضمام إلى الفصل بنجاح!');
         $('#inside_join_name').val('');
         $('#inside_join_section').hide();
+        localStorage.setItem('studentName', stdName);
         loadSingleClassroomStudents(clsCode);
     }
 }
